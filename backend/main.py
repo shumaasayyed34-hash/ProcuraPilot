@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from database.postgres import create_all_tables
+from routers import auth as auth_router
 
 load_dotenv()
 
@@ -24,6 +25,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth_router.router, prefix="/api/v1")
 
 
 @app.get("/")
