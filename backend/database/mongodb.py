@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 
@@ -7,13 +8,23 @@ load_dotenv()
 MONGO_URL = os.getenv("MONGO_URL")
 MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "procurapilot")
 
-client: AsyncIOMotorClient = None
+_client: Optional[AsyncIOMotorClient] = None
 
 
 def get_mongo_client() -> AsyncIOMotorClient:
-    return AsyncIOMotorClient(MONGO_URL)
+    global _client
+    if _client is None:
+        _client = AsyncIOMotorClient(MONGO_URL)
+    return _client
 
 
 def get_mongo_db():
     c = get_mongo_client()
     return c[MONGO_DB_NAME]
+
+
+def close_mongo_client():
+    global _client
+    if _client is not None:
+        _client.close()
+        _client = None

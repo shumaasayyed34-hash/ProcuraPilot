@@ -12,3 +12,7 @@ passlib[bcrypt]
 bcrypt
 aiofiles
 httpx
+instructor
+openai
+google-generativeai
+pytest
