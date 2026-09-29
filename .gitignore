@@ -1,0 +1,51 @@
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+backend/.venv/
+backend/venv/
+
+# Environment Variables & Credentials
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env*
+
+# Python Caches & Compiled Files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.nox/
+.hypothesis/
+
+# Document Uploads & Generated Storage
+backend/uploads/
+uploads/
+*.log
+
+# Node.js & Frontend Build Outputs
+node_modules/
+frontend/node_modules/
+.next/
+frontend/.next/
+out/
+build/
+dist/
+.vercel
+
+# IDE & Editor Configurations
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db

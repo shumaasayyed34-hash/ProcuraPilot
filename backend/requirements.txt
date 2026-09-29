@@ -16,3 +16,8 @@ instructor
 openai
 google-generativeai
 pytest
+pytesseract
+pillow
+pdf2image
+pypdf
+email-validator
