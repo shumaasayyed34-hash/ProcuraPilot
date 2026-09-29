@@ -1,5 +1,5 @@
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import String, Text, DateTime, Enum, ForeignKey, Integer, Float
 from sqlalchemy.orm import Mapped, mapped_column
 from database.postgres import Base
@@ -28,5 +28,5 @@ class PurchaseOrder(Base):
     delivery_address: Mapped[str] = mapped_column(Text, nullable=True)
     payment_terms: Mapped[str] = mapped_column(String(255), nullable=True)
     special_terms: Mapped[str] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
