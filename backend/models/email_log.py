@@ -1,5 +1,5 @@
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import String, Text, DateTime, Enum, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 from database.postgres import Base
@@ -21,5 +21,5 @@ class EmailLog(Base):
     subject: Mapped[str] = mapped_column(String(500), nullable=True)
     body: Mapped[str] = mapped_column(Text, nullable=True)
     status: Mapped[EmailStatus] = mapped_column(Enum(EmailStatus), default=EmailStatus.draft, nullable=False)
-    sent_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    sent_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)

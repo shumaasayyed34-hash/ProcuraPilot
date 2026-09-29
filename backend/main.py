@@ -6,6 +6,9 @@ from database.mongodb import close_mongo_client
 from database.postgres import create_all_tables
 from routers import auth as auth_router
 from routers import extraction as extraction_router
+from routers import suppliers as suppliers_router
+from routers import rfqs as rfqs_router
+from routers import quotations as quotations_router
 
 load_dotenv()
 
@@ -31,6 +34,9 @@ app.add_middleware(
 
 app.include_router(auth_router.router, prefix="/api/v1")
 app.include_router(extraction_router.router, prefix="/api/v1")
+app.include_router(suppliers_router.router, prefix="/api/v1")
+app.include_router(rfqs_router.router, prefix="/api/v1")
+app.include_router(quotations_router.router, prefix="/api/v1")
 
 
 @app.get("/")
