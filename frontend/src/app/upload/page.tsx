@@ -10,16 +10,13 @@ import { FileUp, Shield, Cpu, Sparkles, Database, CheckCircle2 } from "lucide-re
 export default function DocumentUploadPage() {
   const [documents, setDocuments] = useState<UploadedDocument[]>([]);
 
-  // Initialize with initial sample data if empty so the UI looks active and ready immediately
   useEffect(() => {
     const saved = localStorage.getItem("procurapilot_docs");
     if (saved) {
       try {
         setDocuments(JSON.parse(saved));
         return;
-      } catch (e) {
-        // Fallback to sample
-      }
+      } catch (e) {}
     }
 
     const initialDocs: UploadedDocument[] = [
@@ -88,33 +85,33 @@ export default function DocumentUploadPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-6">
         {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 font-semibold">
-                Phase 1 • Ingestion Pipeline
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-semibold">
+                Document Ingestion Pipeline
               </span>
-              <span className="text-[11px] text-slate-500">•</span>
-              <span className="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> Ready for Quotations
+              <span className="text-[11px] text-slate-300">•</span>
+              <span className="text-[11px] text-emerald-700 font-medium flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Ready for Quotations
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-100 tracking-tight">
-              Document Ingestion & OCR Processing
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              Quotation Ingestion & OCR Processing
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Upload multi-format supplier bids. PaddleOCR and Tesseract extract raw tables and text, normalized via LLM schemas into PostgreSQL & MongoDB.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs flex items-center gap-2">
-              <Database className="w-4 h-4 text-indigo-400" />
+            <div className="px-3 py-2 rounded-xl bg-white border border-slate-200 shadow-xs text-xs flex items-center gap-2.5">
+              <Database className="w-4 h-4 text-blue-600" />
               <div>
-                <p className="text-[10px] text-slate-400">PostgreSQL Target</p>
-                <p className="font-semibold text-slate-200">16 DB Tables Mapped</p>
+                <p className="text-[10px] text-slate-500 font-medium">PostgreSQL Target</p>
+                <p className="font-semibold text-slate-900">16 DB Tables Mapped</p>
               </div>
             </div>
           </div>
@@ -122,37 +119,37 @@ export default function DocumentUploadPage() {
 
         {/* Technical Architecture Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+          <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
               <FileUp className="w-4 h-4" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-slate-200">Drag & Drop Upload Module</h4>
-              <p className="text-[11px] text-slate-400 mt-0.5">
+              <h4 className="text-xs font-bold text-slate-900">Drag & Drop Upload Module</h4>
+              <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
                 Supports PDF proposals, Excel RFQ sheets, and scanned PNG/JPG receipts up to 25MB.
               </p>
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">
+          <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-purple-50 text-purple-600 border border-purple-100">
               <Cpu className="w-4 h-4" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-slate-200">Hybrid OCR Extraction</h4>
-              <p className="text-[11px] text-slate-400 mt-0.5">
+              <h4 className="text-xs font-bold text-slate-900">Hybrid OCR Extraction</h4>
+              <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
                 PaddleOCR (table boundary detection) combined with Tesseract for multilingual character precision.
               </p>
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-slate-200">Standard Schema Normalization</h4>
-              <p className="text-[11px] text-slate-400 mt-0.5">
+              <h4 className="text-xs font-bold text-slate-900">Standard Schema Normalization</h4>
+              <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
                 Standardizes pricing, Incoterms, tax/GST, and payment milestones for Phase 2 validation.
               </p>
             </div>
@@ -162,14 +159,14 @@ export default function DocumentUploadPage() {
         {/* Drag and Drop Upload Component */}
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-slate-200">Upload New Quotation</h2>
-            <span className="text-[11px] text-slate-500">FastAPI /api/v1/documents/upload</span>
+            <h2 className="text-sm font-bold text-slate-900">Upload New Quotation</h2>
+            <span className="text-[11px] text-slate-500 font-mono">FastAPI /api/v1/documents/upload</span>
           </div>
           <DocumentDropzone onDocumentProcessed={handleDocumentProcessed} />
         </section>
 
         {/* Uploaded Ingested Documents List */}
-        <section className="pt-4">
+        <section className="pt-2">
           <DocumentList documents={documents} onDeleteDocument={handleDeleteDocument} />
         </section>
       </div>
