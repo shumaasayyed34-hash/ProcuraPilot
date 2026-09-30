@@ -12,3 +12,14 @@ passlib[bcrypt]
 bcrypt
 aiofiles
 httpx
+instructor
+openai
+google-generativeai
+pytest
+pytesseract
+pillow
+pdf2image
+pypdf
+email-validator
+sentence-transformers
+faiss-cpu

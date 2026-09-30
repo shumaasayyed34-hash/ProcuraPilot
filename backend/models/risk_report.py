@@ -1,5 +1,5 @@
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Text, DateTime, Enum, ForeignKey, Integer, Float
 from sqlalchemy.orm import Mapped, mapped_column
 from database.postgres import Base
@@ -28,4 +28,4 @@ class RiskReport(Base):
     risk_category: Mapped[RiskCategory] = mapped_column(Enum(RiskCategory), nullable=True)
     news_sentiment_score: Mapped[float] = mapped_column(Float, nullable=True)
     risk_narrative: Mapped[str] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)

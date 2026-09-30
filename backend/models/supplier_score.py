@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import DateTime, ForeignKey, Integer, Float, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 from database.postgres import Base
@@ -17,4 +17,4 @@ class SupplierScore(Base):
     esg_score: Mapped[float] = mapped_column(Float, nullable=True)
     rank_position: Mapped[int] = mapped_column(Integer, nullable=True)
     criteria_weights: Mapped[dict] = mapped_column(JSON, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
