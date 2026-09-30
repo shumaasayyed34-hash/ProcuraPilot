@@ -21,3 +21,5 @@ pillow
 pdf2image
 pypdf
 email-validator
+sentence-transformers
+faiss-cpu
