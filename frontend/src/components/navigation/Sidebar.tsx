@@ -67,7 +67,8 @@ const navItems: NavItem[] = [
     href: "/ahp",
     icon: Sliders,
     phase: "Phase 3",
-    isReady: false,
+    isReady: true,
+    badge: "Live",
   },
   {
     title: "Risk Intelligence",
@@ -140,7 +141,7 @@ export function Sidebar() {
       <div className="mx-4 my-3 p-3 rounded-lg bg-blue-50/80 border border-blue-100 flex items-center justify-between">
         <div>
           <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider">Active Workspace</p>
-          <p className="text-xs font-bold text-slate-900">Phase 2 • Validation & Compare</p>
+          <p className="text-xs font-bold text-slate-900">Phase 3 • AHP Scoring Engine</p>
         </div>
         <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-800">
           Live

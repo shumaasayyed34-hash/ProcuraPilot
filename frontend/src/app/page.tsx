@@ -24,6 +24,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { AHPExecutiveWidget } from "@/components/dashboard/AHPExecutiveWidget";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -32,8 +33,8 @@ export default function DashboardPage() {
 
   const phases = [
     { num: 1, title: "Document Ingestion & OCR", status: "Completed", role: "Iqra (OCR) + Paramita (LLM) + Shumaaila (DB) + Faisal (UI)", active: false, done: true },
-    { num: 2, title: "Validation Engine & Comparison", status: "Active (Current Phase)", role: "Faisal (UI & Tables) + Paramita (Engine) + Shumaaila (Validation S2.4)", active: true, done: false },
-    { num: 3, title: "AHP Scoring Engine", status: "Upcoming", role: "Pairwise Multi-Criteria Matrix & Consistency Ratio", active: false, done: false },
+    { num: 2, title: "Validation Engine & Comparison", status: "Completed", role: "Faisal (UI & Tables) + Paramita (Engine) + Shumaaila (Validation S2.4)", active: false, done: true },
+    { num: 3, title: "AHP Scoring Engine", status: "Active (Current Phase)", role: "Faisal (UI & Tables) + Paramita (Engine P3.1/P3.2) + Shumaaila (AHP S3.2)", active: true, done: false },
     { num: 4, title: "Risk Intelligence", status: "Upcoming", role: "6-Dimension Supplier Financial & Geopolitical Risk", active: false, done: false },
     { num: 5, title: "Market Intelligence & Explainability", status: "Upcoming", role: "Price Benchmarking & Explainable Sourcing Rationales", active: false, done: false },
   ];
@@ -47,30 +48,37 @@ export default function DashboardPage() {
             <div className="space-y-2 max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-xs border border-white/20 text-white text-xs font-semibold">
                 <Sparkles className="w-3.5 h-3.5 text-blue-300" />
-                <span>Semester 7 • Phase 2 Execution Active</span>
+                <span>Semester 7 • Phase 3 Sourcing Engine Live</span>
               </div>
               <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
                 Welcome, {user?.full_name || "Faisal Sakware"}
               </h1>
               <p className="text-xs text-blue-100 leading-relaxed">
-                Validation Engine S2.4 and Multi-Vendor Supplier Comparison Matrix (Paramita P2.4) are operational. Normalize multi-currency vendor quotes, rectify compliance discrepancies inline, and evaluate weighted procurement rankings.
+                AHP Supplier Scoring Engine & Pairwise MCDM Matrix (Phase 3) are operational. Configure multi-attribute criteria weights, verify transitive consistency ratios (CR &lt; 0.10), and view audit-ready supplier rankings.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 shrink-0">
               <Link
-                href="/comparison/101"
+                href="/ahp/results?rfqId=101"
                 className="px-4 py-2.5 rounded-lg bg-white text-blue-900 hover:bg-blue-50 font-semibold text-xs shadow-sm flex items-center gap-2 transition-all"
               >
-                <GitCompare className="w-4 h-4 text-blue-700" />
-                <span>Launch Comparison Matrix</span>
+                <Sliders className="w-4 h-4 text-blue-700" />
+                <span>AHP Leaderboard</span>
+              </Link>
+              <Link
+                href="/ahp/configure?rfqId=101"
+                className="px-4 py-2.5 rounded-lg bg-blue-700 hover:bg-blue-600 text-white border border-blue-500 font-semibold text-xs flex items-center gap-2 transition-all"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Configure AHP Weights</span>
               </Link>
               <Link
                 href="/rfq/101"
-                className="px-4 py-2.5 rounded-lg bg-blue-700 hover:bg-blue-600 text-white border border-blue-500 font-semibold text-xs flex items-center gap-2 transition-all"
+                className="px-4 py-2.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-white border border-slate-600 font-semibold text-xs flex items-center gap-2 transition-all"
               >
                 <FolderGit2 className="w-4 h-4" />
-                <span>Manage Active RFQ</span>
+                <span>Manage RFQ-101</span>
               </Link>
             </div>
           </div>
@@ -141,6 +149,9 @@ export default function DashboardPage() {
             <p className="text-[11px] text-slate-400 mt-1">India, Germany, US suppliers</p>
           </div>
         </div>
+
+        {/* Phase 3 AHP Score Executive Summary Widget */}
+        <AHPExecutiveWidget rfqId={101} />
 
         {/* Phase 2 Spotlight & Quick Action Workspaces */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

@@ -15,6 +15,7 @@ import {
   GitCompare,
   CheckCircle2,
   AlertCircle,
+  Sliders,
 } from "lucide-react";
 import { RFQItem, RFQStatus } from "@/lib/comparison-types";
 
@@ -135,11 +136,20 @@ export function RFQHeader({
           {/* Compare Selected Suppliers Button */}
           <button
             onClick={onCompareClick}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all shadow-xs"
+          >
+            <GitCompare className="w-3.5 h-3.5 text-blue-600" />
+            <span>Compare Suppliers ({selectedQuotesCount})</span>
+          </button>
+
+          {/* AHP Scoring Engine Button */}
+          <Link
+            href={`/ahp/configure?rfqId=${rfq.id}`}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all shadow-sm"
           >
-            <GitCompare className="w-3.5 h-3.5" />
-            <span>Compare Selected Suppliers ({selectedQuotesCount})</span>
-          </button>
+            <Sliders className="w-3.5 h-3.5" />
+            <span>AHP Scoring Engine (Phase 3)</span>
+          </Link>
         </div>
       </div>
 
