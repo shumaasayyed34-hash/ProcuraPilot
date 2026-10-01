@@ -19,139 +19,222 @@ import {
   Database,
   Sliders,
   DollarSign,
+  FolderGit2,
+  GitCompare,
+  Zap,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { UploadedDocument } from "@/lib/types";
+import { AHPExecutiveWidget } from "@/components/dashboard/AHPExecutiveWidget";
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [docCount, setDocCount] = useState(2);
-  const [totalValue, setTotalValue] = useState(61350);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("procurapilot_docs");
-    if (saved) {
-      try {
-        const docs: UploadedDocument[] = JSON.parse(saved);
-        setDocCount(docs.length);
-        const sum = docs.reduce(
-          (acc, d) => acc + (d.extracted_data?.total_amount || 0),
-          0
-        );
-        if (sum > 0) setTotalValue(sum);
-      } catch (e) {}
-    }
-  }, []);
+  const [docCount, setDocCount] = useState(4);
+  const [totalValue, setTotalValue] = useState(9473150);
 
   const phases = [
-    { num: 1, title: "Document Ingestion", status: "Active (Current)", role: "Faisal (UI) + Iqra (OCR) + Paramita (LLM) + Shumaaila (DB)", active: true },
-    { num: 2, title: "Validation & Comparison", status: "Upcoming", role: "Comparison Matrix & Vector DB", active: false },
-    { num: 3, title: "AHP Scoring Engine", status: "Upcoming", role: "Eigenvector Pairwise Weights", active: false },
-    { num: 4, title: "Risk Intelligence", status: "Upcoming", role: "6 Dimensions Scoring & Alerts", active: false },
-    { num: 5, title: "Market Intelligence", status: "Upcoming", role: "Price Benchmarking & Explainable AI", active: false },
+    { num: 1, title: "Document Ingestion & OCR", status: "Completed", role: "Iqra (OCR) + Paramita (LLM) + Shumaaila (DB) + Faisal (UI)", active: false, done: true },
+    { num: 2, title: "Validation Engine & Comparison", status: "Completed", role: "Faisal (UI & Tables) + Paramita (Engine) + Shumaaila (Validation S2.4)", active: false, done: true },
+    { num: 3, title: "AHP Scoring Engine", status: "Active (Current Phase)", role: "Faisal (UI & Tables) + Paramita (Engine P3.1/P3.2) + Shumaaila (AHP S3.2)", active: true, done: false },
+    { num: 4, title: "Risk Intelligence", status: "Upcoming", role: "6-Dimension Supplier Financial & Geopolitical Risk", active: false, done: false },
+    { num: 5, title: "Market Intelligence & Explainability", status: "Upcoming", role: "Price Benchmarking & Explainable Sourcing Rationales", active: false, done: false },
   ];
 
   return (
     <AppLayout>
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* Welcome Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900/60 via-slate-900/80 to-purple-950/60 border border-indigo-800/40 p-8 shadow-2xl">
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-semibold">
-                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Semester 7 • Phase 1 Execution</span>
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Welcome Banner - Enterprise Corporate Blue Card */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white p-7 shadow-sm border border-blue-950/20">
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-xs border border-white/20 text-white text-xs font-semibold">
+                <Sparkles className="w-3.5 h-3.5 text-blue-300" />
+                <span>Semester 7 • Phase 3 Sourcing Engine Live</span>
               </div>
-              <h1 className="text-3xl font-extrabold text-white tracking-tight">
+              <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
                 Welcome, {user?.full_name || "Faisal Sakware"}
               </h1>
-              <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
-                ProcuraPilot AI platform architecture is live. Document ingestion, OCR extraction pipelines, and PostgreSQL user authentication are initialized for quotation analysis.
+              <p className="text-xs text-blue-100 leading-relaxed">
+                AHP Supplier Scoring Engine & Pairwise MCDM Matrix (Phase 3) are operational. Configure multi-attribute criteria weights, verify transitive consistency ratios (CR &lt; 0.10), and view audit-ready supplier rankings.
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
               <Link
-                href="/upload"
-                className="px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-semibold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all"
+                href="/ahp/results?rfqId=101"
+                className="px-4 py-2.5 rounded-lg bg-white text-blue-900 hover:bg-blue-50 font-semibold text-xs shadow-sm flex items-center gap-2 transition-all"
               >
-                <UploadCloud className="w-4 h-4" />
-                <span>Ingest Quotation PDF</span>
+                <Sliders className="w-4 h-4 text-blue-700" />
+                <span>AHP Leaderboard</span>
+              </Link>
+              <Link
+                href="/ahp/configure?rfqId=101"
+                className="px-4 py-2.5 rounded-lg bg-blue-700 hover:bg-blue-600 text-white border border-blue-500 font-semibold text-xs flex items-center gap-2 transition-all"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Configure AHP Weights</span>
+              </Link>
+              <Link
+                href="/rfq/101"
+                className="px-4 py-2.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-white border border-slate-600 font-semibold text-xs flex items-center gap-2 transition-all"
+              >
+                <FolderGit2 className="w-4 h-4" />
+                <span>Manage RFQ-101</span>
               </Link>
             </div>
           </div>
         </div>
 
-        {/* 4 Metrics Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-5 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-indigo-500/30 transition-all">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-medium text-slate-400">Ingested Quotations</span>
-              <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
-                <FileText className="w-4 h-4" />
+        {/* 4 Crisp Enterprise Metric Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-slate-500">Active RFQ Pipelines</span>
+              <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
+                <FolderGit2 className="w-4 h-4" />
               </div>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-white">{docCount}</span>
-              <span className="text-xs text-emerald-400 font-semibold">+100% Phase 1</span>
+              <span className="text-2xl font-bold font-mono text-slate-900">3</span>
+              <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
+                Sourcing Open
+              </span>
             </div>
-            <p className="text-[11px] text-slate-500 mt-1">Multi-format bids processed</p>
+            <p className="text-[11px] text-slate-400 mt-1">Industrial Machinery, Sensors, Polymers</p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-indigo-500/30 transition-all">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-medium text-slate-400">Total Extracted Value</span>
-              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+          <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-slate-500">Total Pipeline Value</span>
+              <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
                 <DollarSign className="w-4 h-4" />
               </div>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-white">${totalValue.toLocaleString()}</span>
-              <span className="text-xs text-slate-400 font-mono">USD</span>
+              <span className="text-2xl font-bold font-mono text-slate-900">
+                ₹{totalValue.toLocaleString("en-IN")}
+              </span>
             </div>
-            <p className="text-[11px] text-slate-500 mt-1">Structured pricing proposals</p>
+            <p className="text-[11px] text-slate-400 mt-1">Multi-currency bids normalized via FX</p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-indigo-500/30 transition-all">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-medium text-slate-400">OCR & Schema Match</span>
-              <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
-                <Cpu className="w-4 h-4" />
+          <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-slate-500">Validation Data Hygiene</span>
+              <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
+                <ShieldCheck className="w-4 h-4" />
               </div>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-white">97.8%</span>
-              <span className="text-xs text-emerald-400 font-medium">High Precision</span>
+              <span className="text-2xl font-bold font-mono text-emerald-600">94.5%</span>
+              <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                Engine S2.4
+              </span>
             </div>
-            <p className="text-[11px] text-slate-500 mt-1">PaddleOCR + Tesseract hybrid</p>
+            <p className="text-[11px] text-slate-400 mt-1">Tax bracket & duplicate detection</p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-slate-900/50 border border-slate-800/80 hover:border-indigo-500/30 transition-all">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-medium text-slate-400">Database Schema</span>
-              <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
-                <Database className="w-4 h-4" />
+          <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-slate-500">Supplier Quotes Ingested</span>
+              <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
+                <FileText className="w-4 h-4" />
               </div>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-white">16 Tables</span>
-              <span className="text-xs text-blue-400 font-mono">PostgreSQL</span>
+              <span className="text-2xl font-bold font-mono text-slate-900">{docCount}</span>
+              <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded">
+                4 Vendors
+              </span>
             </div>
-            <p className="text-[11px] text-slate-500 mt-1">Ready for RFQ & PO models</p>
+            <p className="text-[11px] text-slate-400 mt-1">India, Germany, US suppliers</p>
+          </div>
+        </div>
+
+        {/* Phase 3 AHP Score Executive Summary Widget */}
+        <AHPExecutiveWidget rfqId={101} />
+
+        {/* Phase 2 Spotlight & Quick Action Workspaces */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Card 1: RFQ Workspace */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between space-y-4">
+            <div className="space-y-2">
+              <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                <FolderGit2 className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-slate-900 text-sm">
+                RFQ Workspace Management
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Review active RFQ-2025-0841, inspect incoming vendor quotation bids, verify delivery milestones, and coordinate procurement approvals.
+              </p>
+            </div>
+            <Link
+              href="/rfq/101"
+              className="inline-flex items-center justify-between w-full px-3.5 py-2 rounded-lg bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 text-slate-800 hover:text-blue-700 font-semibold text-xs transition-colors"
+            >
+              <span>Open RFQ-2025-0841</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Card 2: Validation Engine */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between space-y-4">
+            <div className="space-y-2">
+              <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-slate-900 text-sm">
+                Validation Engine & Hygiene
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Identify mandatory field misses, rectify 32% GST rate discrepancy inline, acknowledge non-blocking Incoterms warnings, and filter duplicate quotes.
+              </p>
+            </div>
+            <Link
+              href="/rfq/101"
+              className="inline-flex items-center justify-between w-full px-3.5 py-2 rounded-lg bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 text-slate-800 hover:text-emerald-700 font-semibold text-xs transition-colors"
+            >
+              <span>Inspect Validation Report</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Card 3: Multi-Criteria Comparison */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between space-y-4">
+            <div className="space-y-2">
+              <div className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                <GitCompare className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-slate-900 text-sm">
+                Supplier Comparison Matrix
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Side-by-side sticky column comparison matrix with min-max badges, dynamic MCDM weight adjustment sliders, and multi-currency FX triangulation.
+              </p>
+            </div>
+            <Link
+              href="/comparison/101"
+              className="inline-flex items-center justify-between w-full px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-colors shadow-xs"
+            >
+              <span>Launch Comparison Matrix</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
 
         {/* Semester 7 Roadmap Progress Section */}
-        <div className="rounded-2xl bg-slate-900/40 border border-slate-800/80 p-6 space-y-5">
+        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <h2 className="text-sm font-bold text-slate-200">Semester 7 Milestone Roadmap</h2>
-              <p className="text-xs text-slate-400">
-                End-to-End Pipeline: Document Upload → OCR/LLM Extraction → Validation → AHP Scoring → Risk & Final Recommendation
+              <h2 className="text-sm font-bold text-slate-900">
+                ProcuraPilot Semester 7 Pipeline Roadmap
+              </h2>
+              <p className="text-xs text-slate-500">
+                Progress tracker across all 5 engineering milestones for the AI decision platform.
               </p>
             </div>
-            <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-slate-800 text-indigo-300 border border-slate-700 w-fit">
-              Checkpoint: Phase 1 to 5
+            <span className="text-[11px] font-mono px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 w-fit font-semibold">
+              Current Milestone: Phase 2
             </span>
           </div>
 
@@ -161,99 +244,38 @@ export default function DashboardPage() {
                 key={p.num}
                 className={`p-4 rounded-xl border transition-all ${
                   p.active
-                    ? "bg-indigo-950/40 border-indigo-500/60 shadow-lg shadow-indigo-950/50"
-                    : "bg-slate-950/40 border-slate-800/80 opacity-70"
+                    ? "bg-blue-50/60 border-blue-300 ring-1 ring-blue-500/20 shadow-xs"
+                    : p.done
+                    ? "bg-emerald-50/30 border-emerald-200"
+                    : "bg-slate-50 border-slate-200 opacity-60"
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span
                     className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${
                       p.active
-                        ? "bg-indigo-600 text-white"
-                        : "bg-slate-800 text-slate-400"
+                        ? "bg-blue-600 text-white"
+                        : p.done
+                        ? "bg-emerald-600 text-white"
+                        : "bg-slate-200 text-slate-600"
                     }`}
                   >
                     Phase {p.num}
                   </span>
                   {p.active && (
                     <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
                     </span>
                   )}
+                  {p.done && (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  )}
                 </div>
-                <h3 className="font-bold text-slate-200 text-xs">{p.title}</h3>
-                <p className="text-[10px] text-slate-400 mt-1 line-clamp-2">{p.role}</p>
+                <h3 className="font-bold text-slate-900 text-xs">{p.title}</h3>
+                <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">{p.role}</p>
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* Quick Actions & Team Responsibilities Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Quick Ingestion Callout */}
-          <div className="rounded-2xl bg-gradient-to-br from-slate-900/90 to-slate-950/90 border border-slate-800/90 p-6 flex flex-col justify-between">
-            <div>
-              <div className="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-3">
-                <UploadCloud className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-white text-base">Test Document Ingestion UI</h3>
-              <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
-                Experience the drag-and-drop file upload zone, simulated OCR (Tesseract / PaddleOCR), and structured JSON schema inspection built in Phase 1.
-              </p>
-            </div>
-
-            <div className="pt-6">
-              <Link
-                href="/upload"
-                className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-colors"
-              >
-                <span>Launch Document Ingestion</span>
-                <ChevronRight className="w-4 h-4 text-indigo-400" />
-              </Link>
-            </div>
-          </div>
-
-          {/* Team Roles Breakdown */}
-          <div className="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-6 space-y-4">
-            <h3 className="font-bold text-white text-sm flex items-center gap-2">
-              <Layers className="w-4 h-4 text-indigo-400" />
-              Phase 1 Team Roles & Alignment
-            </h3>
-
-            <div className="space-y-2 text-xs">
-              <div className="p-2.5 rounded-xl bg-indigo-950/30 border border-indigo-800/40 flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-indigo-300">Faisal Sakware (You):</span>
-                  <p className="text-[11px] text-slate-400">Next.js 16 + Tailwind UI, JWT Auth, Upload UI, Navigation</p>
-                </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Complete</span>
-              </div>
-
-              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-slate-200">Shumaaila Naaz Sayyad:</span>
-                  <p className="text-[11px] text-slate-400">Core FastAPI backend, 16 DB tables, PostgreSQL + MongoDB</p>
-                </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">Backend</span>
-              </div>
-
-              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-slate-200">Iqra Kotawdekar:</span>
-                  <p className="text-[11px] text-slate-400">Document Upload Module, Tesseract & PaddleOCR integration</p>
-                </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">OCR Engine</span>
-              </div>
-
-              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-slate-200">Paramita Roy:</span>
-                  <p className="text-[11px] text-slate-400">LLM Data Extraction Engine, Standard schema mapping</p>
-                </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">LLM Engine</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>

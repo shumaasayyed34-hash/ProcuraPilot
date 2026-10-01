@@ -14,6 +14,7 @@ from services.ingestion import ingestion_service
 from services.upload_service import upload_service
 from services.ocr_service import ocr_service
 from utils.ocr_metrics import evaluate_ocr_accuracy
+from utils.validator import validate_document_content
 
 router = APIRouter(prefix="/extraction", tags=["Document Upload, OCR & Extraction"])
 
@@ -75,6 +76,17 @@ async def upload_and_process_document(
         "preprocessor_metrics": ocr_result.get("preprocessor_metrics"),
     }
 
+    # Run document content validation before any further processing
+    doc_validation = validate_document_content(cleaned_ocr_text, None)
+    if not doc_validation["is_valid_document"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": "Invalid document: " + " ".join(doc_validation["document_errors"]),
+                "document_validation": doc_validation,
+            },
+        )
+
     # If auto_ingest is True, run dual-write ingestion pipeline
     if auto_ingest:
         ingest_res = await ingestion_service.ingest_document(
@@ -84,11 +96,14 @@ async def upload_and_process_document(
             metadata=metadata,
             custom_instructions=custom_instructions,
         )
+        structured = ingest_res.get("structured_data") or ingest_res.get("extraction", {})
+        final_doc_validation = validate_document_content(cleaned_ocr_text, structured if structured else None)
         return {
             "document_id": doc_id,
             "filename": file.filename,
             "ocr": ocr_result,
             "ingestion": ingest_res,
+            "document_validation": final_doc_validation,
         }
 
     # Otherwise run extraction engine in-memory
@@ -99,12 +114,32 @@ async def upload_and_process_document(
         custom_instructions=custom_instructions,
     )
 
+    # Re-validate with structured data now available
+    structured_data = extraction_res.extracted_data if hasattr(extraction_res, "extracted_data") else (
+        extraction_res.get("extracted_data") if isinstance(extraction_res, dict) else None
+    )
+    final_doc_validation = validate_document_content(cleaned_ocr_text, structured_data)
+    if not final_doc_validation["is_valid_document"] and final_doc_validation["document_errors"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "message": "Invalid document: " + " ".join(final_doc_validation["document_errors"]),
+                "document_validation": final_doc_validation,
+            },
+        )
+
     return {
         "document_id": doc_id,
         "filename": file.filename,
         "file_size_bytes": file_size,
         "ocr": ocr_result,
         "extraction": extraction_res,
+        "document_validation": {
+            "is_valid_document": final_doc_validation["is_valid_document"],
+            "document_errors": final_doc_validation["document_errors"],
+            "document_warnings": final_doc_validation["document_warnings"],
+            "extracted_fields_count": final_doc_validation["extracted_fields_count"],
+        },
     }
 
 
