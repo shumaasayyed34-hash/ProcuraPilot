@@ -11,6 +11,7 @@ from routers import rfqs as rfqs_router
 from routers import quotations as quotations_router
 from routers import vector as vector_router
 from routers import memory as memory_router
+from routers import ahp as ahp_router
 
 load_dotenv()
 
@@ -41,6 +42,7 @@ app.include_router(rfqs_router.router, prefix="/api/v1")
 app.include_router(quotations_router.router, prefix="/api/v1")
 app.include_router(vector_router.router, prefix="/api/v1")
 app.include_router(memory_router.router, prefix="/api/v1")
+app.include_router(ahp_router.router, prefix="/api/v1")
 
 
 @app.get("/")
