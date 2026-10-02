@@ -11,8 +11,8 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 import numpy as np
 
-from backend.services.vector_db.chunker import DocumentChunk, ProcurementTextChunker, chunker
-from backend.services.vector_db.embeddings import EmbeddingService, embedding_service
+from services.vector_db.chunker import DocumentChunk, ProcurementTextChunker, chunker
+from services.vector_db.embeddings import EmbeddingService, embedding_service
 
 
 logger = logging.getLogger("procurapilot.vectorstore")

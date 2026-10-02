@@ -71,7 +71,7 @@ class AgentSharedMemoryService:
 
         # 2. MongoDB Tier (Async)
         try:
-            from backend.database.mongodb import get_mongo_db
+            from database.mongodb import get_mongo_db
             db = get_mongo_db()
             await db.agent_shared_memory.update_one(
                 {"session_id": session_id},
@@ -114,7 +114,7 @@ class AgentSharedMemoryService:
 
         # MongoDB check
         try:
-            from backend.database.mongodb import get_mongo_db
+            from database.mongodb import get_mongo_db
             db = get_mongo_db()
             doc = await db.agent_shared_memory.find_one({"session_id": session_id})
             if doc and "context" in doc:
@@ -147,7 +147,7 @@ class AgentSharedMemoryService:
 
         # MongoDB append
         try:
-            from backend.database.mongodb import get_mongo_db
+            from database.mongodb import get_mongo_db
             db = get_mongo_db()
             await db.agent_shared_memory.update_one(
                 {"session_id": session_id},
@@ -174,7 +174,7 @@ class AgentSharedMemoryService:
         logs = _IN_MEMORY_LOGS.get(session_id, [])
 
         try:
-            from backend.database.mongodb import get_mongo_db
+            from database.mongodb import get_mongo_db
             db = get_mongo_db()
             doc = await db.agent_shared_memory.find_one({"session_id": session_id})
             if doc:
@@ -198,7 +198,7 @@ class AgentSharedMemoryService:
         _IN_MEMORY_LOGS.pop(session_id, None)
 
         try:
-            from backend.database.mongodb import get_mongo_db
+            from database.mongodb import get_mongo_db
             db = get_mongo_db()
             await db.agent_shared_memory.delete_one({"session_id": session_id})
         except Exception as e:
