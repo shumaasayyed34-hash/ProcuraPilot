@@ -116,7 +116,14 @@ class NewsSentimentService:
         articles: List[NewsArticle],
         supplier_name: str,
     ) -> NewsSentimentResult:
-        """Analyzes sentiment score (-1.0 to +1.0) and extracts risk signals across articles."""
+        """Analyzes sentiment score (-1.0 to +1.0) and extracts risk signals across articles using P4.1 classifier."""
+        try:
+            from services.risk_sentiment import risk_sentiment_classifier
+            report = risk_sentiment_classifier.analyze_supplier_news(articles=articles, supplier_name=supplier_name)
+            return report.to_legacy_sentiment_result()
+        except Exception as e:
+            logger.warning(f"Fallback to baseline news sentiment parser due to: {e}")
+
         if not articles:
             return NewsSentimentResult(
                 sentiment_score=0.0,
