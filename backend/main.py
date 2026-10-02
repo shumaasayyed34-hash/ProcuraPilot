@@ -15,6 +15,7 @@ from routers import ahp as ahp_router
 from routers import ahp_agent as ahp_agent_router
 from routers import risk as risk_router
 from routers import market as market_router
+from routers import recommendation as recommendation_router
 
 load_dotenv()
 
@@ -49,6 +50,7 @@ app.include_router(ahp_router.router, prefix="/api/v1")
 app.include_router(ahp_agent_router.router, prefix="/api/v1")
 app.include_router(risk_router.router, prefix="/api/v1")
 app.include_router(market_router.router, prefix="/api/v1")
+app.include_router(recommendation_router.router, prefix="/api/v1")
 
 
 @app.get("/")
