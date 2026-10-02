@@ -34,13 +34,19 @@ class AgentSharedMemoryService:
         redis_url = os.getenv("REDIS_URL")
         if redis_url:
             try:
-                import redis
-                self.redis_client = redis.Redis.from_url(redis_url, decode_responses=True)
-                self.redis_client.ping()
-                logger.info("AgentSharedMemoryService initialized with Redis backend.")
-            except Exception as e:
-                logger.warning(f"Redis connection failed ({e}). Falling back to Mongo/In-Memory mode.")
-                self.redis_client = None
+                import redis.asyncio as aioredis
+                self.redis_client = aioredis.from_url(redis_url, decode_responses=True)
+                logger.info("AgentSharedMemoryService initialized with async Redis backend.")
+            except Exception:
+                try:
+                    import redis
+                    self.redis_client = redis.Redis.from_url(redis_url, decode_responses=True)
+                    self.redis_client.ping()
+                    logger.info("AgentSharedMemoryService initialized with sync Redis backend.")
+                except Exception as e:
+                    logger.warning(f"Redis connection failed ({e}). Falling back to Mongo/In-Memory mode.")
+                    self.redis_client = None
+
 
     async def set_context(
         self,
@@ -205,3 +211,90 @@ class AgentSharedMemoryService:
             logger.debug(f"MongoDB clear_session error: {e}")
 
         return True
+
+    async def store_ahp_results(
+        self,
+        run_id: str,
+        evaluation_data: Dict[str, Any],
+        ttl_seconds: Optional[int] = 86400
+    ) -> bool:
+        """
+        Task I3.3: Store AHP scoring results, utility score breakdowns, and rationale into Agent Shared Memory.
+        Key naming convention: agent_memory:ahp:{run_id}
+        """
+        ahp_key = f"agent_memory:ahp:{run_id}"
+
+        # 1. Store via set_context under run_id session
+        await self.set_context(
+            session_id=run_id,
+            key=ahp_key,
+            value=evaluation_data,
+            agent_id="AHPDecisionAgent_I3.1",
+            ttl_seconds=ttl_seconds
+        )
+
+        # 2. Directly cache under ahp_key in Redis if active
+        if self.redis_client:
+            try:
+                import json
+                import inspect
+                res = self.redis_client.set(ahp_key, json.dumps(evaluation_data), ex=ttl_seconds)
+                if inspect.isawaitable(res):
+                    await res
+            except Exception as e:
+                logger.warning(f"Redis store_ahp_results error for {ahp_key}: {e}")
+
+        # 3. Always cache in memory
+        if run_id not in _IN_MEMORY_SESSIONS:
+            _IN_MEMORY_SESSIONS[run_id] = {}
+        _IN_MEMORY_SESSIONS[run_id][ahp_key] = {
+            "value": evaluation_data,
+            "updated_by": "AHPDecisionAgent_I3.1",
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+
+        # Also store under direct ahp_key session for fast key lookup
+        _IN_MEMORY_SESSIONS[ahp_key] = {
+            "evaluation": {
+                "value": evaluation_data,
+                "updated_by": "AHPDecisionAgent_I3.1",
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+        return True
+
+    async def get_ahp_context(self, run_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Task I3.3: Fast, structured retrieval of stored AHP evaluation results by run_id.
+        """
+        ahp_key = f"agent_memory:ahp:{run_id}"
+
+        # 1. Try Redis first
+        if self.redis_client:
+            try:
+                import json
+                import inspect
+                res = self.redis_client.get(ahp_key)
+                if inspect.isawaitable(res):
+                    raw_data = await res
+                else:
+                    raw_data = res
+                if raw_data:
+                    return json.loads(raw_data)
+            except Exception as e:
+                logger.warning(f"Redis get_ahp_context error for {ahp_key}: {e}")
+
+
+        # 2. Try session context
+        data = await self.get_context(session_id=run_id, key=ahp_key)
+        if data is not None:
+            return data
+
+        # 3. Try direct key lookup in memory
+        if ahp_key in _IN_MEMORY_SESSIONS:
+            item = _IN_MEMORY_SESSIONS[ahp_key].get("evaluation")
+            if item and "value" in item:
+                return item["value"]
+
+        return None
+
