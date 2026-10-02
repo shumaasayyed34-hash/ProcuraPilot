@@ -168,8 +168,8 @@ export function StackedComparisonCards({
                     : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200"
                 }`}
               >
-                <Award className="w-3.5 h-3.5" />
-                <span>Select for AHP Decision (Phase 3)</span>
+                <Award className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">Select AHP (Phase 3)</span>
               </button>
             </div>
           </div>

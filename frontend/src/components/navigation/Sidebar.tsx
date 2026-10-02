@@ -21,6 +21,7 @@ import {
   Sparkle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/Toast";
 
 interface NavItem {
   title: string;
@@ -75,7 +76,8 @@ const navItems: NavItem[] = [
     href: "/risk",
     icon: ShieldAlert,
     phase: "Phase 4",
-    isReady: false,
+    isReady: true,
+    badge: "Live",
   },
   {
     title: "AI Recommendations",
@@ -116,6 +118,17 @@ const navItems: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const toast = useToast();
+
+  const handleNavClick = (e: React.MouseEvent, item: NavItem) => {
+    if (!item.isReady) {
+      e.preventDefault();
+      toast.info(
+        `${item.title} (${item.phase})`,
+        "Coming Soon — This module is currently in active development for upcoming releases."
+      );
+    }
+  };
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 z-40 w-72 bg-white border-r border-slate-200 flex flex-col text-slate-800 transition-all shadow-sm">
@@ -161,13 +174,14 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.isReady ? item.href : "#"}
+              onClick={(e) => handleNavClick(e, item)}
               className={cn(
                 "group flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150",
                 isActive
                   ? "bg-blue-50 text-blue-700 font-semibold border-l-2 border-blue-600"
                   : item.isReady
                   ? "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                  : "text-slate-400 hover:text-slate-500 hover:bg-slate-50/50 cursor-not-allowed opacity-60"
+                  : "text-slate-400 hover:text-slate-600 hover:bg-slate-50/70 cursor-pointer opacity-75"
               )}
             >
               <div className="flex items-center gap-2.5">

@@ -162,52 +162,40 @@ def validate_document_content(extracted_text: str, structured_data: Optional[dic
             "procurement_keywords_found": found_keywords,
         }
 
-    # Step 2 — structured data presence
-    if not structured_data:
-        document_errors.append(
-            "No structured data could be extracted from this document. "
-            "The document may be unclear, corrupted, or not a valid quotation format."
-        )
-        return {
-            "is_valid_document": False,
-            "document_errors": document_errors,
-            "document_warnings": document_warnings,
-            "extracted_fields_count": 0,
-            "procurement_keywords_found": found_keywords,
-        }
+    # Step 2 & 3 — structured data checks (evaluated if structured_data is provided)
+    extracted_count = 0
+    if structured_data is not None:
+        unit_price = structured_data.get("unit_price")
+        total_amount = structured_data.get("total_amount")
 
-    unit_price = structured_data.get("unit_price")
-    total_amount = structured_data.get("total_amount")
+        if unit_price is None and total_amount is None:
+            document_errors.append(
+                "No price information found in the document. "
+                "Please ensure the document contains clear pricing details."
+            )
+            return {
+                "is_valid_document": False,
+                "document_errors": document_errors,
+                "document_warnings": document_warnings,
+                "extracted_fields_count": 0,
+                "procurement_keywords_found": found_keywords,
+            }
 
-    if unit_price is None and total_amount is None:
-        document_errors.append(
-            "No price information found in the document. "
-            "Please ensure the document contains clear pricing details."
-        )
-        return {
-            "is_valid_document": False,
-            "document_errors": document_errors,
-            "document_warnings": document_warnings,
-            "extracted_fields_count": 0,
-            "procurement_keywords_found": found_keywords,
-        }
+        tracked_fields = ["unit_price", "total_amount", "delivery_time_days", "currency", "payment_terms", "supplier_name"]
+        extracted_count = sum(1 for f in tracked_fields if structured_data.get(f) is not None)
 
-    # Step 3 — minimum extracted fields
-    tracked_fields = ["unit_price", "total_amount", "delivery_time_days", "currency", "payment_terms", "supplier_name"]
-    extracted_count = sum(1 for f in tracked_fields if structured_data.get(f) is not None)
-
-    if extracted_count < 2:
-        document_errors.append(
-            f"Insufficient data extracted from document. Only {extracted_count} field(s) found. "
-            "Please upload a more detailed quotation document."
-        )
-        return {
-            "is_valid_document": False,
-            "document_errors": document_errors,
-            "document_warnings": document_warnings,
-            "extracted_fields_count": extracted_count,
-            "procurement_keywords_found": found_keywords,
-        }
+        if extracted_count < 2:
+            document_errors.append(
+                f"Insufficient data extracted from document. Only {extracted_count} field(s) found. "
+                "Please upload a more detailed quotation document."
+            )
+            return {
+                "is_valid_document": False,
+                "document_errors": document_errors,
+                "document_warnings": document_warnings,
+                "extracted_fields_count": extracted_count,
+                "procurement_keywords_found": found_keywords,
+            }
 
     # Step 4 — language / ASCII check
     if extracted_text:

@@ -177,7 +177,7 @@ export const DEFAULT_WEIGHT_TEMPLATES: AHPWeightTemplate[] = [
       },
       {
         version: "v1.0",
-        author: "Shumaaila (DB Engine)",
+        author: "Apex Decision Engine",
         approved_at: "2025-06-01T09:00:00Z",
         notes: "Baseline equalized weighting model.",
         weights: { price: 0.4, quality: 0.3, delivery: 0.2, esg: 0.1 },

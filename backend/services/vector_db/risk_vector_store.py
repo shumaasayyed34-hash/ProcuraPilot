@@ -29,11 +29,12 @@ class RiskVectorStoreService:
         self.faiss_index = None
         self.risk_records: Dict[str, Dict[str, Any]] = {}
         self.id_to_event_key: List[str] = []
+        self.fallback_vectors: List[List[float]] = []
 
         self._init_faiss()
 
     def _init_faiss(self):
-        """Initializes or loads dedicated FAISS index for risk records."""
+        """Initializes or loads dedicated FAISS index for risk records, falling back to NumPy matrix."""
         try:
             import faiss
 
@@ -57,29 +58,38 @@ class RiskVectorStoreService:
                 self.faiss_index = faiss.IndexFlatIP(self.dimension)
                 logger.info(f"Initialized new Risk FAISS IndexFlatIP (dim={self.dimension})")
         except Exception as e:
-            logger.error(f"Failed to initialize FAISS for RiskVectorStore: {e}")
+            logger.warning(f"FAISS not available for RiskVectorStore ({e}). Falling back to NumPy Cosine Index.")
             self.faiss_index = None
+            if RISK_METADATA_STORE_PATH.exists():
+                try:
+                    with open(RISK_METADATA_STORE_PATH, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        self.risk_records = data.get("records", {})
+                        self.id_to_event_key = data.get("id_map", [])
+                        self.fallback_vectors = data.get("vectors", [])
+                except Exception as read_err:
+                    logger.warning(f"Could not load risk metadata fallback: {read_err}")
 
     def _save_store(self):
-        """Persists FAISS index and metadata store to disk."""
-        if self.faiss_index is None:
-            return
+        """Persists FAISS index / fallback vectors and metadata store to disk."""
         try:
-            import faiss
+            if self.faiss_index is not None:
+                import faiss
+                faiss.write_index(self.faiss_index, str(RISK_FAISS_INDEX_PATH))
 
-            faiss.write_index(self.faiss_index, str(RISK_FAISS_INDEX_PATH))
             with open(RISK_METADATA_STORE_PATH, "w", encoding="utf-8") as f:
                 json.dump(
                     {
                         "records": self.risk_records,
                         "id_map": self.id_to_event_key,
+                        "vectors": self.fallback_vectors,
                     },
                     f,
                     indent=2,
                 )
-            logger.info(f"Persisted Risk FAISS index ({self.faiss_index.ntotal} records) to disk.")
+            logger.info(f"Persisted Risk Vector Store ({len(self.id_to_event_key)} records) to disk.")
         except Exception as e:
-            logger.error(f"Error saving Risk FAISS store: {e}")
+            logger.error(f"Error saving Risk Vector store: {e}")
 
     def add_risk_event(
         self,
@@ -90,14 +100,15 @@ class RiskVectorStoreService:
         event_type: str = "general_risk",
         metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
-        """Embeds and indexes a new supplier risk event into FAISS vector store."""
+        """Embeds and indexes a new supplier risk event into FAISS or NumPy vector store."""
         event_id = f"RISK-EVT-{uuid.uuid4().hex[:8]}"
         full_text = f"Supplier ID: {supplier_id} | Type: {event_type} | Title: {title} | Narrative: {description}"
 
         vec = self.embedder.embed_text(full_text)
-        norm = np.linalg.norm(vec)
+        vec_np = np.array(vec, dtype=np.float32)
+        norm = np.linalg.norm(vec_np)
         if norm > 0:
-            vec = vec / norm
+            vec_np = vec_np / norm
 
         record_data = {
             "event_id": event_id,
@@ -111,15 +122,23 @@ class RiskVectorStoreService:
 
         if self.faiss_index is not None:
             if event_id in self.risk_records:
-                # Update existing
                 idx = self.id_to_event_key.index(event_id)
                 self.id_to_event_key[idx] = event_id
             else:
-                self.faiss_index.add(np.array([vec], dtype=np.float32))
+                self.faiss_index.add(np.array([vec_np], dtype=np.float32))
+                self.id_to_event_key.append(event_id)
+        else:
+            vec_list = vec_np.tolist()
+            if event_id in self.risk_records:
+                idx = self.id_to_event_key.index(event_id)
+                self.id_to_event_key[idx] = event_id
+                self.fallback_vectors[idx] = vec_list
+            else:
+                self.fallback_vectors.append(vec_list)
                 self.id_to_event_key.append(event_id)
 
-            self.risk_records[event_id] = record_data
-            self._save_store()
+        self.risk_records[event_id] = record_data
+        self._save_store()
 
         return event_id
 
@@ -132,22 +151,33 @@ class RiskVectorStoreService:
         """Performs semantic vector search over historical risk records."""
         results: List[RiskVectorSearchResult] = []
 
-        if self.faiss_index is None or self.faiss_index.ntotal == 0:
+        total_records = self.faiss_index.ntotal if self.faiss_index is not None else len(self.fallback_vectors)
+        if total_records == 0:
             return results
 
         query_vec = self.embedder.embed_text(query)
-        norm = np.linalg.norm(query_vec)
+        query_np = np.array(query_vec, dtype=np.float32)
+        norm = np.linalg.norm(query_np)
         if norm > 0:
-            query_vec = query_vec / norm
+            query_np = query_np / norm
 
-        # Fetch candidate matches from FAISS with expanded candidate pool for supplier filtering
-        if supplier_id:
-            search_k = self.faiss_index.ntotal if self.faiss_index.ntotal <= 500 else min(top_k * 20, self.faiss_index.ntotal)
+        # Fetch candidate matches
+        if self.faiss_index is not None:
+            if supplier_id:
+                search_k = total_records if total_records <= 500 else min(top_k * 20, total_records)
+            else:
+                search_k = min(top_k * 3, total_records)
+            scores_raw, indices_raw = self.faiss_index.search(np.array([query_np], dtype=np.float32), search_k)
+            scores = scores_raw[0]
+            indices = indices_raw[0]
         else:
-            search_k = min(top_k * 3, self.faiss_index.ntotal)
-        scores, indices = self.faiss_index.search(np.array([query_vec], dtype=np.float32), search_k)
+            matrix = np.array(self.fallback_vectors, dtype=np.float32)
+            sim_scores = np.dot(matrix, query_np)
+            sorted_indices = np.argsort(sim_scores)[::-1]
+            indices = sorted_indices
+            scores = sim_scores[sorted_indices]
 
-        for i, idx in enumerate(indices[0]):
+        for i, idx in enumerate(indices):
             if idx < 0 or idx >= len(self.id_to_event_key):
                 continue
 
@@ -160,7 +190,7 @@ class RiskVectorStoreService:
             if supplier_id and str(rec.get("supplier_id")) != str(supplier_id):
                 continue
 
-            sim_score = float(scores[0][i])
+            sim_score = float(scores[i])
             sim_score = max(0.0, min(1.0, (sim_score + 1.0) / 2.0 if sim_score < 0 else sim_score))
 
             results.append(

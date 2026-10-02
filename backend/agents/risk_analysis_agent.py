@@ -155,22 +155,36 @@ class RiskAnalysisAgent:
         final_composite = round(max(0.0, min(100.0, adjusted_composite)), 2)
         category = get_risk_category(final_composite)
 
-        # 5. Narrative & Recommendations Generation
-        baseline_narrative = generate_risk_narrative(request.supplier_name, dimension_breakdown)
-        unified_narrative = self._generate_unified_narrative(
-            supplier_name=request.supplier_name,
-            composite_score=final_composite,
-            category=category,
-            baseline_narrative=baseline_narrative,
-            sentiment_result=sentiment_result,
-            historical_matches=historical_matches,
-        )
-
-        recommendations = self._generate_recommendations(
-            category=category,
-            dimensions=dimension_breakdown,
-            risk_signals=sentiment_result.risk_signals,
-        )
+        # 5. Narrative & Recommendations Generation (P4.2 Structured LLM Engine)
+        try:
+            from services.risk_narrative import risk_narrative_engine
+            structured_narrative = risk_narrative_engine.generate_narrative(
+                supplier_name=request.supplier_name,
+                composite_score=final_composite,
+                risk_category=category,
+                dimensions=dimension_breakdown,
+                supplier_profile=request.model_dump(),
+                news_sentiment=sentiment_result,
+                historical_matches=historical_matches,
+            )
+            unified_narrative = structured_narrative.markdown_briefing or structured_narrative.executive_summary
+            recommendations = [m.action for m in structured_narrative.actionable_mitigation_plan]
+        except Exception as narrative_err:
+            logger.warning(f"Fallback to baseline narrative generator: {narrative_err}")
+            baseline_narrative = generate_risk_narrative(request.supplier_name, dimension_breakdown)
+            unified_narrative = self._generate_unified_narrative(
+                supplier_name=request.supplier_name,
+                composite_score=final_composite,
+                category=category,
+                baseline_narrative=baseline_narrative,
+                sentiment_result=sentiment_result,
+                historical_matches=historical_matches,
+            )
+            recommendations = self._generate_recommendations(
+                category=category,
+                dimensions=dimension_breakdown,
+                risk_signals=sentiment_result.risk_signals,
+            )
 
         # 6. Build Final Report Object
         timestamp = datetime.now(timezone.utc).isoformat()

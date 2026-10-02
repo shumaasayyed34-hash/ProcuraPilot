@@ -14,7 +14,7 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
     full_name: str | None = None
-    role: UserRole = UserRole.viewer
+    role: str = "viewer"
 
 
 class LoginRequest(BaseModel):
@@ -45,11 +45,20 @@ async def register(payload: RegisterRequest, db: AsyncSession = Depends(get_db))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    role_mapping = {
+        "admin": UserRole.admin,
+        "manager": UserRole.procurement_manager,
+        "buyer": UserRole.procurement_manager,
+        "procurement_manager": UserRole.procurement_manager,
+        "viewer": UserRole.viewer,
+    }
+    assigned_role = role_mapping.get(str(payload.role).lower(), UserRole.viewer)
+
     user = User(
         email=payload.email,
         hashed_password=hash_password(payload.password),
         full_name=payload.full_name,
-        role=payload.role,
+        role=assigned_role,
     )
     db.add(user)
     await db.commit()

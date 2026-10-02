@@ -96,9 +96,9 @@ export function StickyComparisonTable({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-x-auto w-full max-w-full">
       {/* Table Container with Sticky Column */}
-      <div className="overflow-x-auto relative">
+      <div className="overflow-x-auto relative w-full">
         <table className="w-full text-left border-collapse min-w-[1050px]">
           {/* Header */}
           <thead>
@@ -294,14 +294,14 @@ export function StickyComparisonTable({
                     <td className="py-4 px-4 text-right">
                       <button
                         onClick={() => onSelectSupplierForAHP(supplier)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shadow-xs ${
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-colors shadow-xs ${
                           supplier.rank === 1
                             ? "bg-blue-600 hover:bg-blue-700 text-white"
                             : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200"
                         }`}
                       >
-                        <Award className="w-3.5 h-3.5" />
-                        <span>Select for AHP</span>
+                        <Award className="w-3.5 h-3.5 shrink-0" />
+                        <span>Select AHP</span>
                       </button>
                     </td>
                   </tr>

@@ -60,25 +60,25 @@ export default function DashboardPage() {
 
             <div className="flex flex-wrap items-center gap-3 shrink-0">
               <Link
-                href="/ahp/results?rfqId=101"
+                href="/ahp/results"
                 className="px-4 py-2.5 rounded-lg bg-white text-blue-900 hover:bg-blue-50 font-semibold text-xs shadow-sm flex items-center gap-2 transition-all"
               >
                 <Sliders className="w-4 h-4 text-blue-700" />
                 <span>AHP Leaderboard</span>
               </Link>
               <Link
-                href="/ahp/configure?rfqId=101"
+                href="/ahp/configure"
                 className="px-4 py-2.5 rounded-lg bg-blue-700 hover:bg-blue-600 text-white border border-blue-500 font-semibold text-xs flex items-center gap-2 transition-all"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>Configure AHP Weights</span>
               </Link>
               <Link
-                href="/rfq/101"
+                href="/rfq"
                 className="px-4 py-2.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-white border border-slate-600 font-semibold text-xs flex items-center gap-2 transition-all"
               >
                 <FolderGit2 className="w-4 h-4" />
-                <span>Manage RFQ-101</span>
+                <span>Browse RFQ Directory</span>
               </Link>
             </div>
           </div>
@@ -213,7 +213,7 @@ export default function DashboardPage() {
               </p>
             </div>
             <Link
-              href="/comparison/101"
+              href="/comparison"
               className="inline-flex items-center justify-between w-full px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-colors shadow-xs"
             >
               <span>Launch Comparison Matrix</span>
