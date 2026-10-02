@@ -60,6 +60,7 @@ class IngestionService:
         raw_ocr_text: str,
         document_id: Optional[str] = None,
         rfq_id: Optional[int] = None,
+        supplier_id: Optional[int] = None,
         metadata: Optional[Dict[str, Any]] = None,
         custom_instructions: Optional[str] = None,
     ) -> Dict[str, Any]:
@@ -101,12 +102,13 @@ class IngestionService:
 
         # Step 3: Write structured data into PostgreSQL (P1.4 requirement)
         quotation_id = None
-        supplier_id = None
+        final_supplier_id = supplier_id
 
         async with AsyncSessionLocal() as session:
             try:
-                # 3a. Resolve or create Supplier
-                supplier_id = await self._resolve_or_create_supplier(session, extracted_data)
+                # 3a. Resolve or create Supplier if not explicitly provided
+                if not final_supplier_id:
+                    final_supplier_id = await self._resolve_or_create_supplier(session, extracted_data)
 
                 # 3b. Insert Quotation record
                 val_status = (
@@ -127,9 +129,11 @@ class IngestionService:
                     "line_items": [item.model_dump(mode="json") for item in extracted_data.line_items],
                 }
 
+                target_rfq_id = rfq_id or extracted_data.rfq_id
+
                 quotation = Quotation(
-                    rfq_id=extracted_data.rfq_id or rfq_id or 1,  # Default fallback if testing
-                    supplier_id=supplier_id,
+                    rfq_id=target_rfq_id,
+                    supplier_id=final_supplier_id,
                     unit_price=extracted_data.unit_price,
                     total_amount=extracted_data.total_amount,
                     currency=extracted_data.currency,
@@ -146,9 +150,26 @@ class IngestionService:
                     validation_errors=validation_errors_dict,
                 )
                 session.add(quotation)
+
+                # 3c. If linked to an RFQ and supplier, mark RFQSupplier as responded
+                if target_rfq_id and final_supplier_id:
+                    from models.rfq_supplier import RFQSupplier, RFQSupplierStatus
+                    from sqlalchemy import select
+                    rfq_sup_res = await session.execute(
+                        select(RFQSupplier).where(
+                            RFQSupplier.rfq_id == target_rfq_id,
+                            RFQSupplier.supplier_id == final_supplier_id,
+                        )
+                    )
+                    rfq_sup = rfq_sup_res.scalar_one_or_none()
+                    if rfq_sup:
+                        rfq_sup.status = RFQSupplierStatus.responded
+                        rfq_sup.responded_at = datetime.now(timezone.utc)
+
                 await session.commit()
                 await session.refresh(quotation)
                 quotation_id = quotation.id
+                supplier_id = final_supplier_id
 
             except Exception as pg_err:
                 await session.rollback()

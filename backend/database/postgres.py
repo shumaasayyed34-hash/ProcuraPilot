@@ -19,11 +19,22 @@ except Exception:
     _using_sqlite = True
     engine = create_async_engine(SQLITE_URL, echo=False)
 
-AsyncSessionLocal = sessionmaker(
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-)
+_active_sessionmaker = None
+
+
+class _SessionMakerProxy:
+    def __call__(self, *args, **kwargs):
+        global _active_sessionmaker, engine
+        if _active_sessionmaker is None:
+            _active_sessionmaker = sessionmaker(
+                bind=engine,
+                class_=AsyncSession,
+                expire_on_commit=False,
+            )
+        return _active_sessionmaker(*args, **kwargs)
+
+
+AsyncSessionLocal = _SessionMakerProxy()
 
 
 class Base(DeclarativeBase):
@@ -36,17 +47,22 @@ async def get_db():
 
 
 async def create_all_tables():
-    global engine, AsyncSessionLocal, _using_sqlite
+    global engine, _active_sessionmaker, _using_sqlite
     import models  # noqa: F401 — ensures all models are registered on Base
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+        _active_sessionmaker = sessionmaker(
+            bind=engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+        )
         print("Connected to PostgreSQL database. All tables verified.")
     except Exception as exc:
         print(f"PostgreSQL connection failed ({exc}). Switching to local SQLite persistent database at {SQLITE_PATH}.")
         _using_sqlite = True
         engine = create_async_engine(SQLITE_URL, echo=False)
-        AsyncSessionLocal = sessionmaker(
+        _active_sessionmaker = sessionmaker(
             bind=engine,
             class_=AsyncSession,
             expire_on_commit=False,
@@ -54,6 +70,9 @@ async def create_all_tables():
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         print("All tables successfully initialized in local SQLite database.")
+
+    from database.migration import run_safe_schema_migrations
+    await run_safe_schema_migrations(engine)
 
     await seed_default_users()
 

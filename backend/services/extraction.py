@@ -78,7 +78,10 @@ class ExtractionEngine:
         self.openai_key = os.getenv("OPENAI_API_KEY", "")
         self.gemini_key = os.getenv("GEMINI_API_KEY", "")
         self.openai_model = os.getenv("OPENAI_MODEL", "gpt-4o")
-        self.gemini_model = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+        raw_gemini = (os.getenv("GEMINI_MODEL") or "gemini-3.5-flash-lite").strip()
+        if raw_gemini in ("gemini-3.0-flash", "gemini-2.0-flash", "gemini-pro", "gemini-flash", ""):
+            raw_gemini = "gemini-3.5-flash-lite"
+        self.gemini_model = raw_gemini
         self.temperature = float(os.getenv("LLM_TEMPERATURE", "0.0"))
         self.max_retries = int(os.getenv("LLM_MAX_RETRIES", "3"))
 
@@ -215,14 +218,40 @@ class ExtractionEngine:
                     ],
                 )
             elif self.provider == "gemini":
-                return self.client.chat.completions.create(
-                    messages=[
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": prompt},
-                    ],
-                    response_model=ProcurementDocumentExtract,
-                    max_retries=self.max_retries,
-                )
+                try:
+                    return self.client.chat.completions.create(
+                        messages=[
+                            {"role": "system", "content": SYSTEM_PROMPT},
+                            {"role": "user", "content": prompt},
+                        ],
+                        response_model=ProcurementDocumentExtract,
+                        max_retries=self.max_retries,
+                    )
+                except Exception as gem_err:
+                    logger.warning(f"Primary Gemini model error ({gem_err}), trying alternative models...")
+                    import instructor
+                    import google.generativeai as genai
+                    genai.configure(api_key=self.gemini_key)
+                    for alt in ["gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-3.7-flash", "gemini-flash-latest"]:
+                        if alt == self.gemini_model:
+                            continue
+                        try:
+                            alt_client = instructor.from_gemini(
+                                client=genai.GenerativeModel(model_name=alt),
+                                mode=instructor.Mode.GEMINI_JSON,
+                            )
+                            logger.info(f"Retrying extraction with alternative model: {alt}")
+                            return alt_client.chat.completions.create(
+                                messages=[
+                                    {"role": "system", "content": SYSTEM_PROMPT},
+                                    {"role": "user", "content": prompt},
+                                ],
+                                response_model=ProcurementDocumentExtract,
+                                max_retries=2,
+                            )
+                        except Exception:
+                            continue
+                    raise gem_err
 
         # Native fallback without Instructor
         return self._native_fallback(prompt)
