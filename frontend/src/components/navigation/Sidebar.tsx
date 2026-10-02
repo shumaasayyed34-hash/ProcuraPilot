@@ -75,7 +75,8 @@ const navItems: NavItem[] = [
     href: "/risk",
     icon: ShieldAlert,
     phase: "Phase 4",
-    isReady: false,
+    isReady: true,
+    badge: "Live",
   },
   {
     title: "AI Recommendations",
