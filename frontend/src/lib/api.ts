@@ -3,7 +3,7 @@ import { User, AuthResponse, UploadedDocument } from "./types";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 class ApiService {
-  private getToken(): string | null {
+  public getToken(): string | null {
     if (typeof window === "undefined") return null;
     return localStorage.getItem("procurapilot_token");
   }
@@ -186,36 +186,125 @@ class ApiService {
     return await res.json();
   }
 
-  // Document Upload API call (connects to Iqra's Phase 1 endpoint when live)
+  // Document Upload API call (connects to real Phase 1 extraction endpoint)
   async uploadDocument(
     file: File,
+    rfqId?: number,
+    supplierId?: number,
     onProgress?: (percent: number) => void
-  ): Promise<{ document_id: string; message: string }> {
+  ): Promise<any> {
     const formData = new FormData();
     formData.append("file", file);
+    if (rfqId) {
+      formData.append("rfq_id", String(rfqId));
+    }
+    if (supplierId) {
+      formData.append("supplier_id", String(supplierId));
+    }
+    formData.append("auto_ingest", "true");
 
     const token = this.getToken();
 
-    try {
-      const res = await fetch(`${API_BASE}/documents/upload`, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
-      });
+    const res = await fetch(`${API_BASE}/extraction/upload`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
 
-      if (!res.ok) {
-        throw new Error("Backend upload failed");
-      }
-
-      return await res.json();
-    } catch (err) {
-      // Simulated upload response for testing UI workflow
-      return {
-        document_id: `DOC-${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
-        message: "File uploaded successfully",
-      };
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({ detail: "Extraction failed" }));
+      const msg =
+        typeof errData.detail === "string"
+          ? errData.detail
+          : errData.detail?.message || "Failed to extract quotation data from document";
+      throw new Error(msg);
     }
+
+    return await res.json();
+  }
+
+  // RFQ API Methods
+  async getRFQOptions(): Promise<{
+    suppliers: Array<{ id: number; name: string; email?: string; phone?: string; country?: string; iso_certified: boolean }>;
+    categories: string[];
+    currencies: string[];
+    units: string[];
+    payment_terms_options: string[];
+    dispatch_methods: string[];
+    shipment_types: string[];
+  }> {
+    const token = this.getToken();
+    const res = await fetch(`${API_BASE}/rfqs/options`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) throw new Error("Failed to load RFQ options");
+    return await res.json();
+  }
+
+  async createRFQ(payload: any): Promise<any> {
+    const token = this.getToken();
+    const res = await fetch(`${API_BASE}/rfqs/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "Failed to create RFQ" }));
+      throw new Error(typeof err.detail === "string" ? err.detail : "Failed to create RFQ");
+    }
+    return await res.json();
+  }
+
+  async getRFQs(): Promise<any[]> {
+    const token = this.getToken();
+    const res = await fetch(`${API_BASE}/rfqs/`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error("Failed to fetch RFQs");
+    return await res.json();
+  }
+
+  async getRFQById(id: number): Promise<any> {
+    const token = this.getToken();
+    const res = await fetch(`${API_BASE}/rfqs/${id}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error("RFQ not found");
+    return await res.json();
+  }
+
+  async generateRFQ(id: number): Promise<any> {
+    const token = this.getToken();
+    const res = await fetch(`${API_BASE}/rfqs/${id}/generate`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) throw new Error("Failed to generate RFQ");
+    return await res.json();
+  }
+
+  async downloadRFQPDF(id: number, rfqNumber?: string): Promise<void> {
+    const token = this.getToken();
+    const res = await fetch(`${API_BASE}/rfqs/${id}/pdf`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) throw new Error("Failed to download RFQ PDF");
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `RFQ-${rfqNumber || id}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   }
 }
 
 export const api = new ApiService();
+

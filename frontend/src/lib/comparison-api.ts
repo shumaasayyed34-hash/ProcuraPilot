@@ -43,22 +43,36 @@ export const comparisonApi = {
             const mock = MOCK_RFQS.find((m) => m.id === d.id);
             return {
               id: d.id,
-              rfq_number: mock?.rfq_number || `RFQ-2025-0${d.id}`,
+              rfq_number: d.rfq_number || mock?.rfq_number || `RFQ-2026-0${d.id}`,
               title: d.title || mock?.title || `Procurement RFQ #${d.id}`,
               category: d.category || mock?.category || "Industrial Sourcing",
-              target_delivery_date: d.required_delivery_date || mock?.target_delivery_date || "2025-12-31",
-              status: d.status || mock?.status || "ready_for_comparison",
-              budget: mock?.budget ?? 3500000,
-              currency: "INR",
+              target_delivery_date: d.required_delivery_date || d.submission_deadline || mock?.target_delivery_date || "2026-12-31",
+              status: d.status || mock?.status || "active",
+              budget: d.budget ?? mock?.budget ?? 3500000,
+              currency: d.currency || "INR",
               created_at: d.created_at || mock?.created_at || new Date().toISOString(),
-              due_date: mock?.due_date || "2025-11-30T18:00:00Z",
-              department: mock?.department || "Procurement Operations",
-              buyer_name: mock?.buyer_name || "Procurement Officer",
-              quotations_count: mock?.quotations_count || 3,
-              line_items: mock?.line_items || [],
+              due_date: d.submission_deadline || mock?.due_date || "2026-11-30T18:00:00Z",
+              department: d.buyer_company || mock?.department || "Procurement Operations",
+              buyer_name: d.buyer_contact_person || mock?.buyer_name || "Procurement Officer",
+              quotations_count: d.quotations_count ?? 0,
+              invited_count: d.invited_count ?? (d.invited_suppliers?.length || 0),
+              line_items: (d.items && d.items.length > 0)
+                ? d.items.map((itm: any) => ({
+                    id: itm.id,
+                    item_code: itm.product_code,
+                    description: itm.description,
+                    quantity: itm.quantity,
+                    unit: itm.unit,
+                    target_unit_price: 1500,
+                  }))
+                : (mock?.line_items || []),
+              items: d.items || [],
+              invited_suppliers: d.invited_suppliers || [],
             };
           });
-          return merged;
+          const existingIds = new Set(data.map((d: any) => d.id));
+          const nonOverlappingMocks = MOCK_RFQS.filter((m) => !existingIds.has(m.id));
+          return [...merged, ...nonOverlappingMocks];
         }
       }
     } catch (e) {
@@ -86,45 +100,43 @@ export const comparisonApi = {
 
     const foundMock = MOCK_RFQS.find((r) => r.id === numId);
 
-    if (foundMock && backendData) {
-      return {
-        ...foundMock,
-        ...backendData,
-        id: numId,
-        budget: foundMock.budget,
-        buyer_name: foundMock.buyer_name,
-        quotations_count: foundMock.quotations_count,
-        line_items: foundMock.line_items,
-      };
-    }
-    if (foundMock) {
-      return foundMock;
-    }
     if (backendData) {
       return {
-        id: numId,
-        rfq_number: `RFQ-2025-0${numId}`,
-        title: backendData.title || `Procurement Sourcing Package #${numId}`,
+        id: backendData.id,
+        rfq_number: backendData.rfq_number || `RFQ-2026-0${backendData.id}`,
+        title: backendData.title,
         category: backendData.category || "Precision Industrial Components",
-        target_delivery_date: backendData.required_delivery_date || "2025-12-31",
-        status: backendData.status || "ready_for_comparison",
-        budget: 3500000,
-        currency: "INR",
+        target_delivery_date: backendData.required_delivery_date || backendData.submission_deadline || "2026-12-31",
+        status: backendData.status || "active",
+        budget: backendData.budget ?? foundMock?.budget ?? 3500000,
+        currency: backendData.currency || "INR",
         created_at: backendData.created_at || new Date().toISOString(),
-        due_date: "2025-11-30T18:00:00Z",
-        department: "Heavy Machinery Operations",
-        buyer_name: "Procurement Lead",
-        quotations_count: 4,
-        line_items: [
-          {
-            id: 1,
-            item_code: `MCH-${numId}-01`,
-            description: `Precision CNC Machined Assemblies (${backendData.title || `Spec #${numId}`})`,
-            quantity: backendData.quantity || 500,
-            unit: backendData.unit || "PCS",
-            target_unit_price: 3200,
-          },
-        ],
+        due_date: backendData.submission_deadline || "2026-11-30T18:00:00Z",
+        department: backendData.buyer_company || foundMock?.department || "Procurement Operations",
+        buyer_name: backendData.buyer_contact_person || foundMock?.buyer_name || "Procurement Lead",
+        quotations_count: backendData.quotations_count ?? 0,
+        invited_count: backendData.invited_count ?? (backendData.invited_suppliers?.length || 0),
+        items: backendData.items || [],
+        invited_suppliers: backendData.invited_suppliers || [],
+        line_items: (backendData.items && backendData.items.length > 0)
+          ? backendData.items.map((itm: any) => ({
+              id: itm.id,
+              item_code: itm.product_code,
+              description: itm.description,
+              quantity: itm.quantity,
+              unit: itm.unit,
+              target_unit_price: 3200,
+            }))
+          : (foundMock?.line_items || [
+              {
+                id: 1,
+                item_code: `MCH-${numId}-01`,
+                description: `Precision CNC Machined Assemblies (${backendData.title || `Spec #${numId}`})`,
+                quantity: backendData.quantity || 500,
+                unit: backendData.unit || "PCS",
+                target_unit_price: 3200,
+              },
+            ]),
       };
     }
 

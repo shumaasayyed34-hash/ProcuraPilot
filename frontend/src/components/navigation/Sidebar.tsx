@@ -35,7 +35,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     title: "Executive Dashboard",
-    href: "/",
+    href: "/dashboard",
     icon: LayoutDashboard,
     phase: "Overview",
     isReady: true,
@@ -167,7 +167,7 @@ export function Sidebar() {
           Decision Pipeline
         </div>
         {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+          const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
           const Icon = item.icon;
 
           return (

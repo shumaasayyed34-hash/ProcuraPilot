@@ -8,14 +8,33 @@ from dotenv import load_dotenv
 load_dotenv(dotenv_path=Path(__file__).parent.parent / ".env")
 
 DATABASE_URL = os.getenv("DATABASE_URL")
+SQLITE_PATH = Path(__file__).parent.parent / "procurapilot.db"
+SQLITE_URL = f"sqlite+aiosqlite:///{SQLITE_PATH}"
 
-engine = create_async_engine(DATABASE_URL, echo=True)
+_using_sqlite = False
 
-AsyncSessionLocal = sessionmaker(
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-)
+try:
+    engine = create_async_engine(DATABASE_URL, echo=False)
+except Exception:
+    _using_sqlite = True
+    engine = create_async_engine(SQLITE_URL, echo=False)
+
+_active_sessionmaker = None
+
+
+class _SessionMakerProxy:
+    def __call__(self, *args, **kwargs):
+        global _active_sessionmaker, engine
+        if _active_sessionmaker is None:
+            _active_sessionmaker = sessionmaker(
+                bind=engine,
+                class_=AsyncSession,
+                expire_on_commit=False,
+            )
+        return _active_sessionmaker(*args, **kwargs)
+
+
+AsyncSessionLocal = _SessionMakerProxy()
 
 
 class Base(DeclarativeBase):
@@ -28,10 +47,33 @@ async def get_db():
 
 
 async def create_all_tables():
+    global engine, _active_sessionmaker, _using_sqlite
     import models  # noqa: F401 — ensures all models are registered on Base
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    print("All 16 tables created successfully.")
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        _active_sessionmaker = sessionmaker(
+            bind=engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+        )
+        print("Connected to PostgreSQL database. All tables verified.")
+    except Exception as exc:
+        print(f"PostgreSQL connection failed ({exc}). Switching to local SQLite persistent database at {SQLITE_PATH}.")
+        _using_sqlite = True
+        engine = create_async_engine(SQLITE_URL, echo=False)
+        _active_sessionmaker = sessionmaker(
+            bind=engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+        )
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        print("All tables successfully initialized in local SQLite database.")
+
+    from database.migration import run_safe_schema_migrations
+    await run_safe_schema_migrations(engine)
+
     await seed_default_users()
 
 
@@ -59,5 +101,6 @@ async def seed_default_users():
                     )
                     session.add(u)
             await session.commit()
+        print("Default users seeded successfully.")
     except Exception as exc:
-        print(f"User seeding skipped/deferred: {exc}")
+        print(f"User seeding note: {exc}")

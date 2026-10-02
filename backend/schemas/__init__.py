@@ -1,4 +1,4 @@
-from backend.schemas.procurement import (
+from .procurement import (
     ProcurementDocumentExtract,
     SupplierExtract,
     LineItemExtract,
@@ -6,10 +6,10 @@ from backend.schemas.procurement import (
     DocumentType,
     ValidationStatusEnum,
 )
-from backend.schemas.supplier import SupplierCreate, SupplierUpdate, SupplierResponse
-from backend.schemas.rfq import RFQCreate, RFQUpdate, RFQResponse
-from backend.schemas.quotation import QuotationCreate, QuotationUpdate, QuotationResponse
-from backend.schemas.comparison import (
+from .supplier import SupplierCreate, SupplierUpdate, SupplierResponse
+from .rfq import RFQCreate, RFQUpdate, RFQResponse
+from .quotation import QuotationCreate, QuotationUpdate, QuotationResponse
+from .comparison import (
     CriterionType,
     ComparisonBadge,
     CriteriaWeights,
@@ -22,14 +22,14 @@ from backend.schemas.comparison import (
     CriterionBenchmark,
     FXConversionAudit,
 )
-from backend.schemas.ahp_agent import (
+from .ahp_agent import (
     AHPEvaluationRequest,
     AHPScoreBreakdown,
     AHPSupplierRankItem,
     AHPRationaleSummary,
     AHPAgentDecisionResponse,
 )
-from backend.schemas.risk_schemas import (
+from .risk_schemas import (
     NewsArticle,
     NewsSentimentResult,
     HistoricalRiskRecord,

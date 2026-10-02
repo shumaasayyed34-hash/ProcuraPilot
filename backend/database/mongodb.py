@@ -15,7 +15,7 @@ _client: Optional[AsyncIOMotorClient] = None
 def get_mongo_client() -> AsyncIOMotorClient:
     global _client
     if _client is None:
-        _client = AsyncIOMotorClient(MONGO_URL)
+        _client = AsyncIOMotorClient(MONGO_URL, serverSelectionTimeoutMS=2000)
     return _client
 
 

@@ -126,14 +126,30 @@ export function RFQHeader({
             <span>{isValidating ? "Validating..." : "Re-run Validation"}</span>
           </button>
 
-          {/* Upload Additional Quotation Button */}
+          {/* Download Official RFQ PDF Button */}
           <button
-            onClick={onUploadClick}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all shadow-xs"
+            onClick={async () => {
+              try {
+                const { api } = await import("@/lib/api");
+                await api.downloadRFQPDF(rfq.id, rfq.rfq_number);
+              } catch (e: any) {
+                alert(e.message || "Failed to download RFQ PDF");
+              }
+            }}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all shadow-xs cursor-pointer"
+          >
+            <FileCheck2 className="w-3.5 h-3.5 text-blue-600" />
+            <span>Download PDF</span>
+          </button>
+
+          {/* Upload Quotation Linking to /upload?rfqId= */}
+          <Link
+            href={`/upload?rfqId=${rfq.id}`}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all shadow-xs cursor-pointer"
           >
             <UploadCloud className="w-3.5 h-3.5 text-blue-600" />
             <span>Upload Quotation</span>
-          </button>
+          </Link>
 
           {/* Compare Selected Suppliers Button with Loading State */}
           <button

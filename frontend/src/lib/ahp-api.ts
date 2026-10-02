@@ -116,6 +116,35 @@ class AHPApiService {
     return DEFAULT_WEIGHT_TEMPLATES;
   }
 
+  private getSuppliersForRFQ(rfqId: number) {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(`procurapilot_quotations_state_${rfqId}`);
+      if (stored) {
+        try {
+          const quotes: any[] = JSON.parse(stored);
+          if (Array.isArray(quotes) && quotes.length > 0) {
+            return quotes.map((q, idx) => ({
+              supplier_id: q.supplier_id || q.id || idx + 1,
+              supplier_name: q.supplier_name || `Supplier ${idx + 1}`,
+              quote_number: q.quote_number || `QTN-${rfqId}-0${idx + 1}`,
+              country: q.country || "India",
+              is_iso_certified: q.is_iso_certified ?? true,
+              msme_registered: true,
+              price: Number(q.base_total_amount || q.total_amount) || 3000000,
+              delivery_time: Number(q.delivery_time_days) || 14,
+              warranty_months: Number(q.warranty_months) || 18,
+              quality_raw: 88,
+              esg_raw: 70,
+              agent_rationale: `Directly ingested quotation from ${q.supplier_name} for RFQ #${rfqId}.`,
+              risk_status: "Low" as const,
+            }));
+          }
+        } catch {}
+      }
+    }
+    return undefined;
+  }
+
   /**
    * Calculate AHP via Simple Mode Direct Weights
    */
@@ -124,6 +153,7 @@ class AHPApiService {
     weights: AHPCriteriaWeights,
     rfqTitle?: string
   ): Promise<AHPEvaluationResult> {
+    const customSuppliers = this.getSuppliersForRFQ(rfqId);
     try {
       const token = this.getToken();
       // Map frontend criteria to backend schema
@@ -153,6 +183,7 @@ class AHPApiService {
           rfqId,
           rfqTitle,
           mode: "simple",
+          customSuppliers,
         });
         this.cacheResult(rfqId, clientEval);
         return clientEval;
@@ -166,6 +197,7 @@ class AHPApiService {
       rfqId,
       rfqTitle,
       mode: "simple",
+      customSuppliers,
     });
     this.cacheResult(rfqId, result);
     return result;
@@ -180,6 +212,7 @@ class AHPApiService {
     criteria: AHPCriterionKey[],
     rfqTitle?: string
   ): Promise<AHPEvaluationResult> {
+    const customSuppliers = this.getSuppliersForRFQ(rfqId);
     try {
       const token = this.getToken();
       const payload = {
@@ -212,6 +245,7 @@ class AHPApiService {
           rfqTitle,
           mode: "pairwise",
           pairwiseMatrix,
+          customSuppliers,
         });
         this.cacheResult(rfqId, clientEval);
         return clientEval;
@@ -235,6 +269,7 @@ class AHPApiService {
       rfqTitle,
       mode: "pairwise",
       pairwiseMatrix,
+      customSuppliers,
     });
     this.cacheResult(rfqId, result);
     return result;
@@ -244,6 +279,7 @@ class AHPApiService {
    * Get Cached or Current AHP Results for RFQ
    */
   async getResults(rfqId: number, rfqTitle?: string): Promise<AHPEvaluationResult> {
+    const customSuppliers = this.getSuppliersForRFQ(rfqId);
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem(`${STORAGE_RESULTS_KEY}_${rfqId}`);
       if (stored) {
@@ -274,6 +310,7 @@ class AHPApiService {
           rfqId,
           rfqTitle,
           mode: "simple",
+          customSuppliers,
         });
         this.cacheResult(rfqId, result);
         return result;
@@ -285,7 +322,7 @@ class AHPApiService {
     // Default calculation with standard balanced weights
     const defaultResult = calculateAHPScores(
       { price: 0.35, quality: 0.3, delivery: 0.25, esg: 0.1 },
-      { rfqId, rfqTitle, mode: "simple" }
+      { rfqId, rfqTitle, mode: "simple", customSuppliers }
     );
     this.cacheResult(rfqId, defaultResult);
     return defaultResult;
