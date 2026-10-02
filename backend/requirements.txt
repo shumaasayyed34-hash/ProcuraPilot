@@ -23,3 +23,5 @@ pypdf
 email-validator
 sentence-transformers
 faiss-cpu
+vaderSentiment
+textblob

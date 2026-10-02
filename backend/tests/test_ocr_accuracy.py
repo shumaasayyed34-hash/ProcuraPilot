@@ -87,9 +87,21 @@ def test_ocr_service_processing():
     assert "preprocessor_metrics" in res
 
 
-def test_upload_api_endpoint():
+def test_upload_api_endpoint(monkeypatch):
     """Tests the /api/v1/extraction/upload FastAPI endpoint."""
     img_bytes = create_sample_quotation_image("QUOTATION REF-555\nVendor: Steel Corp")
+
+    # Mock OCR extraction so unit test is self-contained without OS binary dependency
+    monkeypatch.setattr(
+        ocr_service,
+        "process_document",
+        lambda *args, **kwargs: {
+            "engine_used": "tesseract",
+            "raw_text": "QUOTATION REF-555\nVendor: Steel Corp\nTotal: 5000 INR",
+            "cleaned_text": "QUOTATION REF-555\nVendor: Steel Corp\nTotal: 5000 INR",
+            "preprocessor_metrics": {"lines_removed": 0},
+        },
+    )
 
     files = {"file": ("test_quote.png", img_bytes, "image/png")}
     data = {"rfq_id": "42", "ocr_engine": "tesseract"}

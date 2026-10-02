@@ -7,10 +7,16 @@ Phase 3 Unit & Integration Tests:
 
 import asyncio
 import pytest
-from backend.schemas.ahp_agent import AHPEvaluationRequest, AHPAgentDecisionResponse
-from backend.agents.ahp_decision_agent import AHPDecisionAgent
-from backend.services.redis_subscriber import RedisMessageBusSubscriber
-from backend.services.shared_memory.memory_service import AgentSharedMemoryService
+try:
+    from schemas.ahp_agent import AHPEvaluationRequest, AHPAgentDecisionResponse
+    from agents.ahp_decision_agent import AHPDecisionAgent
+    from services.redis_subscriber import RedisMessageBusSubscriber
+    from services.shared_memory.memory_service import AgentSharedMemoryService
+except ImportError:
+    from backend.schemas.ahp_agent import AHPEvaluationRequest, AHPAgentDecisionResponse
+    from backend.agents.ahp_decision_agent import AHPDecisionAgent
+    from backend.services.redis_subscriber import RedisMessageBusSubscriber
+    from backend.services.shared_memory.memory_service import AgentSharedMemoryService
 
 
 def test_ahp_decision_agent_evaluation():

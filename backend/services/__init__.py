@@ -7,6 +7,17 @@ from services.comparison_engine import (
     comparison_engine,
 )
 
+from services.risk_sentiment import (
+    RiskSentimentClassifier,
+    DetailedNewsSentimentReport,
+    risk_sentiment_classifier,
+)
+from services.risk_narrative import (
+    RiskNarrativeEngine,
+    StructuredRiskNarrative,
+    risk_narrative_engine,
+)
+
 __all__ = [
     "ExtractionEngine",
     "ExtractionResult",
@@ -16,5 +27,12 @@ __all__ = [
     "FXRateService",
     "SupplierComparisonEngine",
     "comparison_engine",
+    "RiskSentimentClassifier",
+    "DetailedNewsSentimentReport",
+    "risk_sentiment_classifier",
+    "RiskNarrativeEngine",
+    "StructuredRiskNarrative",
+    "risk_narrative_engine",
 ]
+
 
