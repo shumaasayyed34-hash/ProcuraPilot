@@ -24,8 +24,12 @@ class EmbeddingService:
         self.model_name = model_name
         self.st_model = None
         self.dimension = 384  # Default for all-MiniLM-L6-v2
+        self._initialized = False
 
-        self._init_model()
+    def _ensure_model(self):
+        if not self._initialized:
+            self._initialized = True
+            self._init_model()
 
     def _init_model(self):
         """Initializes selected embedding model with graceful fallback handling."""
@@ -49,6 +53,7 @@ class EmbeddingService:
 
     def embed_text(self, text: str) -> List[float]:
         """Generates a dense vector embedding for a single text string."""
+        self._ensure_model()
         vectors = self.embed_batch([text])
         return vectors[0] if vectors else [0.0] * self.dimension
 
@@ -59,6 +64,7 @@ class EmbeddingService:
         """Generates dense vector embeddings for a list of text strings."""
         if not texts:
             return []
+        self._ensure_model()
         return self._do_embed_batch(texts)
 
     def encode_batch(self, texts: List[str]) -> List[List[float]]:
@@ -68,7 +74,7 @@ class EmbeddingService:
         return self.dimension
 
     def _do_embed_batch(self, texts: List[str]) -> List[List[float]]:
-
+        self._ensure_model()
 
         # 1. SentenceTransformers local execution
         if self.provider == "sentence-transformers" and self.st_model is not None:

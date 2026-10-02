@@ -29,10 +29,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function loadUser() {
       try {
+        const token = api.getToken();
+        if (!token) {
+          setUser(null);
+          return;
+        }
         const currentUser = await api.getMe();
         setUser(currentUser);
       } catch (err) {
-        // Not authenticated
+        // Not authenticated or expired
+        api.removeToken();
         setUser(null);
       } finally {
         setIsLoading(false);
@@ -51,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const currentUser = await api.getMe();
         setUser(currentUser);
       }
-      router.push("/");
+      router.push("/dashboard");
     } finally {
       setIsLoading(false);
     }
@@ -67,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const newUser = await api.register({ email, password, full_name, role });
       setUser(newUser);
-      router.push("/");
+      router.push("/dashboard");
     } finally {
       setIsLoading(false);
     }

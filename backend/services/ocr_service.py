@@ -208,17 +208,43 @@ class OCRService:
             "preprocessor_metrics": metrics,
         }
 
+    def _extract_text_with_gemini_vision(self, img: Image.Image) -> str:
+        try:
+            import google.generativeai as genai
+            api_key = os.getenv("GEMINI_API_KEY")
+            if api_key:
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel("gemini-3.5-flash-lite")
+                response = model.generate_content([
+                    "You are an expert OCR system. Extract and transcribe all text, tables, line items, headers, numbers, and currency values from this procurement quotation document image verbatim. Output pure plain text.",
+                    img
+                ])
+                if response and response.text:
+                    return response.text.strip()
+        except Exception as e:
+            logger.warning(f"Gemini Vision OCR error: {e}")
+        return ""
+
     def _run_ocr_on_image(self, img: Image.Image, engine: str) -> str:
-        """Executes selected engine on PIL Image."""
-        if engine == "paddleocr":
-            return self.paddle_engine.extract_text_from_image(img)
-        elif engine == "tesseract":
-            return self.tesseract_engine.extract_text_from_image(img)
+        """Executes selected engine on PIL Image with resilient vision fallback."""
+        res = ""
+        if engine == "paddleocr" and self.paddle_engine.available:
+            res = self.paddle_engine.extract_text_from_image(img)
+        elif engine == "tesseract" and self.tesseract_engine.available:
+            res = self.tesseract_engine.extract_text_from_image(img)
         else:
-            # Auto choice: try PaddleOCR if available, otherwise Tesseract
             if self.paddle_engine.available:
-                return self.paddle_engine.extract_text_from_image(img)
-            return self.tesseract_engine.extract_text_from_image(img)
+                res = self.paddle_engine.extract_text_from_image(img)
+            elif self.tesseract_engine.available:
+                res = self.tesseract_engine.extract_text_from_image(img)
+
+        # If OCR output indicates failure or is empty, use Gemini Vision OCR
+        if not res or "Error" in res or "not installed" in res or len(res.strip()) < 10:
+            vision_res = self._extract_text_with_gemini_vision(img)
+            if vision_res:
+                return vision_res
+
+        return res
 
 
 ocr_service = OCRService()

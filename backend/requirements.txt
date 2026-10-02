@@ -25,3 +25,4 @@ sentence-transformers
 faiss-cpu
 vaderSentiment
 textblob
+reportlab
