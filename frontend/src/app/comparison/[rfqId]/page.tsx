@@ -67,8 +67,9 @@ export default function SupplierComparisonDetailPage() {
   const handleSelectAllForAHP = () => {
     toast.success(
       "Transferred to AHP Engine",
-      "Top evaluated vendors forwarded to Phase 3 Pairwise Comparison Matrix."
+      "Forwarding qualified vendors to Phase 3 Pairwise Comparison Matrix..."
     );
+    router.push(`/ahp/configure?rfqId=${rfqId}`);
   };
 
   if (loading || !comparisonData) {

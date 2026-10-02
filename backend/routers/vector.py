@@ -6,9 +6,9 @@ Provides endpoints for document chunking, embedding generation, index upserts, a
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
-from backend.services.vector_db.chunker import ProcurementTextChunker
-from backend.services.vector_db.embeddings import EmbeddingService
-from backend.services.vector_db.vector_store import VectorStoreService
+from services.vector_db.chunker import ProcurementTextChunker
+from services.vector_db.embeddings import EmbeddingService
+from services.vector_db.vector_store import VectorStoreService
 
 router = APIRouter(prefix="/vector", tags=["Vector DB & Embeddings"])
 
