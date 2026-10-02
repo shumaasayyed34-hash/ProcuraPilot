@@ -24,6 +24,14 @@ export const INITIAL_WEIGHTS: CriteriaWeights = {
   esg_compliance: 0.1,
 };
 
+export function sanitizeSupplierName(name?: string): string {
+  if (!name) return "Apex Industrial Technologies Ltd";
+  if (name.toLowerCase().includes("shumaai") || name.toLowerCase().includes("shumaa")) {
+    return "Sterling Precision Solutions Pvt Ltd";
+  }
+  return name;
+}
+
 export const MOCK_RFQS: RFQItem[] = [
   {
     id: 101,
@@ -328,12 +336,12 @@ export function computeComparisonResponse(
   const ratings: Record<number, number> = { 1: 4.6, 2: 4.8, 3: 4.9, 4: 3.4 };
   const esgScores: Record<number, number> = { 1: 82, 2: 94, 3: 88, 4: 55 };
 
-  const minPrice = Math.min(...prices);
-  const maxPrice = Math.max(...prices);
-  const minDelivery = Math.min(...leadTimes);
-  const maxDelivery = Math.max(...leadTimes);
-  const minWarranty = Math.min(...warranties);
-  const maxWarranty = Math.max(...warranties);
+  const minPrice = prices.length > 0 ? Math.min(...prices) : 100000;
+  const maxPrice = prices.length > 0 ? Math.max(...prices) : 100000;
+  const minDelivery = leadTimes.length > 0 ? Math.min(...leadTimes) : 14;
+  const maxDelivery = leadTimes.length > 0 ? Math.max(...leadTimes) : 30;
+  const minWarranty = warranties.length > 0 ? Math.min(...warranties) : 12;
+  const maxWarranty = warranties.length > 0 ? Math.max(...warranties) : 24;
 
   // Normalize and calculate scores
   const evaluatedSuppliers: SupplierComparisonItem[] = quotesToProcess.map((q) => {
@@ -365,7 +373,7 @@ export function computeComparisonResponse(
 
     return {
       supplier_id: q.supplier_id,
-      supplier_name: q.supplier_name,
+      supplier_name: sanitizeSupplierName(q.supplier_name),
       quotation_id: q.id,
       quote_number: q.quote_number,
       country: q.country,

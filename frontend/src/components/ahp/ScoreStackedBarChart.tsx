@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -18,18 +18,34 @@ interface ScoreStackedBarChartProps {
 }
 
 export function ScoreStackedBarChart({ rankings }: ScoreStackedBarChartProps) {
-  // Format data for Recharts stacked bar
-  const chartData = rankings.map((s) => ({
-    name: s.supplier_name.split(" ")[0] + ` (#${s.rank})`,
-    fullName: s.supplier_name,
-    rank: s.rank,
-    // Store contributions as percentage points
-    "Cost / Price": Number((s.criteria_contributions.price * 100).toFixed(1)),
-    "Quality & Specs": Number((s.criteria_contributions.quality * 100).toFixed(1)),
-    "Lead Time": Number((s.criteria_contributions.delivery * 100).toFixed(1)),
-    "ESG / Compliance": Number((s.criteria_contributions.esg * 100).toFixed(1)),
-    totalScore: Number((s.ahp_score * 100).toFixed(1)),
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Format data for Recharts stacked bar with safe fallbacks
+  const chartData = (rankings || []).map((s) => ({
+    name: (s.supplier_name || "Supplier").split(" ")[0] + ` (#${s.rank ?? "-"})`,
+    fullName: s.supplier_name || "Unknown Supplier",
+    rank: s.rank ?? 0,
+    // Store contributions as percentage points safely
+    "Cost / Price": Number(((s.criteria_contributions?.price ?? 0) * 100).toFixed(1)),
+    "Quality & Specs": Number(((s.criteria_contributions?.quality ?? 0) * 100).toFixed(1)),
+    "Lead Time": Number(((s.criteria_contributions?.delivery ?? 0) * 100).toFixed(1)),
+    "ESG / Compliance": Number(((s.criteria_contributions?.esg ?? 0) * 100).toFixed(1)),
+    totalScore: Number(((s.ahp_score ?? 0) * 100).toFixed(1)),
   }));
+
+  if (!mounted) {
+    return (
+      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between h-96 animate-pulse">
+        <div className="h-6 bg-slate-100 rounded w-1/3 mb-2" />
+        <div className="h-4 bg-slate-50 rounded w-1/2 mb-6" />
+        <div className="flex-1 bg-slate-50 rounded" />
+      </div>
+    );
+  }
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {

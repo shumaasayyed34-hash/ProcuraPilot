@@ -20,10 +20,10 @@ export function ValidationSummaryCards({
   issues,
   totalFieldsValidated = 104,
 }: ValidationSummaryCardsProps) {
-  const unresolvedIssues = issues.filter((i) => !i.is_resolved);
+  const unresolvedIssues = (issues || []).filter((i) => !i.is_resolved);
   const errorCount = unresolvedIssues.filter((i) => i.severity === "blocking_error").length;
   const warningCount = unresolvedIssues.filter((i) => i.severity === "warning").length;
-  const duplicateCount = issues.filter((i) => i.issue_type === "duplicate_detected").length;
+  const duplicateCount = (issues || []).filter((i) => i.issue_type === "duplicate_detected").length;
 
   // Calculate hygiene score: 100 - (errors * 15 + warnings * 4) capped at 0-100
   const computedScore = Math.max(

@@ -59,12 +59,12 @@ export function ComparisonHeader({
         </div>
 
         {/* Currency & Layout Toggle Controls */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-3 overflow-x-auto max-w-full pb-1">
           {/* Currency Normalizer Switch */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-lg text-xs font-semibold">
+          <div className="flex items-center bg-slate-100 p-1 rounded-lg text-xs font-semibold shrink-0 whitespace-nowrap">
             <button
               onClick={() => onToggleCurrencyMode("normalized")}
-              className={`px-3 py-1 rounded-md transition-all ${
+              className={`px-3 py-1.5 rounded-md whitespace-nowrap transition-all ${
                 currencyMode === "normalized"
                   ? "bg-white text-blue-700 shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
@@ -74,7 +74,7 @@ export function ComparisonHeader({
             </button>
             <button
               onClick={() => onToggleCurrencyMode("original")}
-              className={`px-3 py-1 rounded-md transition-all ${
+              className={`px-3 py-1.5 rounded-md whitespace-nowrap transition-all ${
                 currencyMode === "original"
                   ? "bg-white text-blue-700 shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
@@ -85,10 +85,10 @@ export function ComparisonHeader({
           </div>
 
           {/* Table vs Cards Toggle */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-lg text-xs font-semibold">
+          <div className="flex items-center bg-slate-100 p-1 rounded-lg text-xs font-semibold shrink-0 whitespace-nowrap">
             <button
               onClick={() => onToggleViewMode("table")}
-              className={`px-3 py-1 rounded-md transition-all ${
+              className={`px-3 py-1.5 rounded-md whitespace-nowrap transition-all ${
                 viewMode === "table"
                   ? "bg-white text-slate-900 shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
@@ -98,7 +98,7 @@ export function ComparisonHeader({
             </button>
             <button
               onClick={() => onToggleViewMode("cards")}
-              className={`px-3 py-1 rounded-md transition-all ${
+              className={`px-3 py-1.5 rounded-md whitespace-nowrap transition-all ${
                 viewMode === "cards"
                   ? "bg-white text-slate-900 shadow-xs"
                   : "text-slate-600 hover:text-slate-900"

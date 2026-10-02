@@ -32,6 +32,7 @@ export function QuotationSubmissionsList({
   const someSelected = quotations.some((q) => q.is_selected);
 
   const getValidationBadge = (status: QuotationValidationStatus, summary: any) => {
+    const s = summary || { warning_count: 0, error_count: 0, hygiene_score: 100 };
     switch (status) {
       case "passed":
         return (
@@ -44,14 +45,14 @@ export function QuotationSubmissionsList({
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
             <AlertTriangle className="w-3 h-3 text-amber-600" />
-            {summary.warning_count} Warning{summary.warning_count > 1 ? "s" : ""}
+            {s.warning_count} Warning{s.warning_count > 1 ? "s" : ""}
           </span>
         );
       case "rejected":
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
             <XCircle className="w-3 h-3 text-rose-600" />
-            Blocked ({summary.error_count} Errors)
+            Blocked ({s.error_count} Errors)
           </span>
         );
       case "validating":
@@ -186,7 +187,7 @@ export function QuotationSubmissionsList({
                   {/* Normalized (INR Base) */}
                   <td className="py-3.5 px-4">
                     <div className="font-bold font-mono text-blue-700">
-                      ₹{quote.base_total_amount.toLocaleString("en-IN")}
+                      ₹{(quote.base_total_amount ?? 0).toLocaleString("en-IN")}
                     </div>
                     {quote.currency !== "INR" && (
                       <span className="text-[10px] text-slate-400 font-mono">
@@ -209,7 +210,7 @@ export function QuotationSubmissionsList({
                   <td className="py-3.5 px-4">
                     {getValidationBadge(quote.validation_status, quote.validation_summary)}
                     <div className="text-[10px] text-slate-500 mt-1">
-                      Hygiene: {quote.validation_summary.hygiene_score}%
+                      Hygiene: {quote.validation_summary?.hygiene_score ?? 100}%
                     </div>
                   </td>
 

@@ -24,6 +24,7 @@ export default function RFQDetailPage() {
   const [issues, setIssues] = useState<ValidationIssue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
+  const [isComparing, setIsComparing] = useState(false);
 
   // Modals state
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -46,6 +47,9 @@ export default function RFQDetailPage() {
       }
     }
     loadRFQData();
+    if (typeof window !== "undefined" && rfqId) {
+      localStorage.setItem("procurapilot_active_rfq_id", String(rfqId));
+    }
   }, [rfqId]);
 
   const handleToggleSelectQuote = (quoteId: number) => {
@@ -134,6 +138,7 @@ export default function RFQDetailPage() {
       toast.warning("Select At Least 2 Suppliers", "At least two valid quotations are required for multi-criteria comparison.");
       return;
     }
+    setIsComparing(true);
     router.push(`/comparison/${rfqId}`);
   };
 
@@ -161,6 +166,7 @@ export default function RFQDetailPage() {
           onRerunValidation={handleRerunValidation}
           onCompareClick={handleCompareClick}
           isValidating={isValidating}
+          isComparing={isComparing}
           selectedQuotesCount={selectedCount}
         />
 
@@ -170,7 +176,7 @@ export default function RFQDetailPage() {
           onToggleSelect={handleToggleSelectQuote}
           onSelectAll={handleSelectAll}
           onViewValidation={(quoteId) => {
-            const targetIssue = issues.find((i) => i.quotation_id === quoteId);
+            const targetIssue = (issues || []).find((i) => i.quotation_id === quoteId);
             if (targetIssue) setSelectedIssueForFix(targetIssue);
           }}
         />
@@ -179,7 +185,7 @@ export default function RFQDetailPage() {
         <div className="pt-2">
           <div className="mb-3">
             <h2 className="text-sm font-bold text-slate-900">
-              Shumaaila&apos;s Backend Validation Report (S2.4)
+              Automated Data Hygiene & Validation Report (S2.4)
             </h2>
             <p className="text-xs text-slate-500">
               Real-time audit verifying mandatory fields, tax rate compliance, and deduplication.

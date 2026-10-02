@@ -149,7 +149,7 @@ export function UploadQuotationModal({
           <div className="p-3 rounded-lg bg-blue-50 border border-blue-100 text-blue-900 text-xs flex items-start gap-2">
             <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
             <p className="text-[11px] leading-relaxed">
-              Upon upload, Iqra&apos;s OCR service will parse line items and Shumaaila&apos;s Validation Engine S2.4 will check GST tax brackets and currency consistency.
+              Upon upload, the automated OCR extraction pipeline will parse line items and the Data Validation Engine will verify GST tax brackets, currency consistency, and arithmetic accuracy.
             </p>
           </div>
 

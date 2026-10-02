@@ -178,7 +178,7 @@ export function DocumentList({ documents, onDeleteDocument }: DocumentListProps)
                 <Code2 className="w-5 h-5 text-blue-600" />
                 <div>
                   <h4 className="font-bold text-slate-900 text-sm">
-                    Extracted Schema Inspection (Shumaaila S1.5 Model)
+                    Extracted Schema Inspection (Procurement Data Model)
                   </h4>
                   <p className="text-[11px] text-slate-500 font-mono">
                     {selectedDoc.filename} • ID: {selectedDoc.id}

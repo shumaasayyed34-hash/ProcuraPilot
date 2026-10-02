@@ -94,7 +94,7 @@ export function DocumentDropzone({ onDocumentProcessed }: DocumentDropzoneProps)
       setTimeout(() => {
         setUploadProgress(75);
         setCurrentStage("schema_extraction");
-        setStageMessage("Mapping extracted entities to Shumaaila's S1.5 PostgreSQL schema...");
+        setStageMessage("Mapping extracted entities to relational PostgreSQL schema...");
 
         setTimeout(() => {
           setUploadProgress(100);
