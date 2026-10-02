@@ -21,6 +21,9 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("procurapilot_remembered_email", email);
+      }
       await register(email, password, fullName, role);
     } catch (err: any) {
       setError(err.message || "Failed to register");
@@ -48,7 +51,7 @@ export default function RegisterPage() {
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div>
               <h2 className="text-sm font-bold text-slate-900">Organization Profile Registration</h2>
-              <p className="text-[11px] text-slate-500">PostgreSQL Schema Auth v1</p>
+              <p className="text-[11px] text-slate-500">PostgreSQL / Persistent Auth v1</p>
             </div>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-semibold">
               Phase 2 Active
@@ -64,13 +67,16 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label htmlFor="fullName" className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Full Name
               </label>
               <div className="relative">
                 <UserIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
+                  id="fullName"
+                  name="name"
                   type="text"
+                  autoComplete="name"
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -81,13 +87,16 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label htmlFor="email" className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Work Email Address
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
+                  id="email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -98,13 +107,16 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label htmlFor="password" className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Password
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
+                  id="password"
+                  name="password"
                   type="password"
+                  autoComplete="new-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

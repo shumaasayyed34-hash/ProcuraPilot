@@ -17,6 +17,7 @@ backend/.venv/
 # Storage & indices
 backend/uploads/
 backend/vector_indices/
+*.db
 
 # Next.js
 .next/
