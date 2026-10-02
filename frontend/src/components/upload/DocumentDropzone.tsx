@@ -133,35 +133,12 @@ export function DocumentDropzone({ onDocumentProcessed, rfqId, supplierId }: Doc
 
       onDocumentProcessed(newDocument);
     } catch (err: any) {
-      console.warn("Live API extraction error:", err);
-      // Clean fallback if backend connection interrupted
-      setUploadProgress(100);
-      setCurrentStage("completed");
-      setStageMessage("Extracted and mapped to schema");
-
-      const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim();
-      const fallbackDocument: UploadedDocument = {
-        id: `DOC-${Math.floor(100000 + Math.random() * 900000)}`,
-        filename: file.name,
-        filesize: file.size,
-        filetype: file.type,
-        upload_progress: 100,
-        stage: "completed",
-        stage_message: "Extracted and mapped to schema",
-        created_at: new Date().toISOString(),
-        ocr_engine: selectedEngine,
-        extracted_data: {
-          supplier_name: cleanName,
-          quote_number: `QTN-${Math.floor(1000 + Math.random() * 9000)}`,
-          total_amount: 32500,
-          currency: "INR",
-          delivery_time_days: 14,
-          payment_terms: "Net 30 Days",
-          line_items_count: 4,
-          confidence_score: 97.5,
-        },
-      };
-      onDocumentProcessed(fallbackDocument);
+      console.error("Live API extraction error:", err);
+      const errMsg = err.message || "Failed to extract quotation data from document";
+      setError(errMsg);
+      setCurrentStage("failed");
+      setStageMessage(`Extraction error: ${errMsg}`);
+      setUploadProgress(0);
     }
   };
 

@@ -91,18 +91,17 @@ async def upload_and_process_document(
                     detail="This supplier was not invited to the selected RFQ.",
                 )
 
-            # Prevent duplicate submissions for the same RFQ
+            # If a quotation already exists for this supplier and RFQ, replace it with updated version
             dup_res = await db.execute(
                 select(Quotation).where(
                     Quotation.rfq_id == rfq_id,
                     Quotation.supplier_id == supplier_id,
                 )
             )
-            if dup_res.scalar_one_or_none():
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="This supplier has already submitted a quotation for this RFQ.",
-                )
+            existing_quote = dup_res.scalar_one_or_none()
+            if existing_quote:
+                await db.delete(existing_quote)
+                await db.commit()
 
     # 1. Validate & Store file
     doc_id, file_path, file_size = await upload_service.save_uploaded_file(file)
