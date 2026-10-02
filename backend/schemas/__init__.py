@@ -1,4 +1,4 @@
-from schemas.procurement import (
+from backend.schemas.procurement import (
     ProcurementDocumentExtract,
     SupplierExtract,
     LineItemExtract,
@@ -6,10 +6,10 @@ from schemas.procurement import (
     DocumentType,
     ValidationStatusEnum,
 )
-from schemas.supplier import SupplierCreate, SupplierUpdate, SupplierResponse
-from schemas.rfq import RFQCreate, RFQUpdate, RFQResponse
-from schemas.quotation import QuotationCreate, QuotationUpdate, QuotationResponse
-from schemas.comparison import (
+from backend.schemas.supplier import SupplierCreate, SupplierUpdate, SupplierResponse
+from backend.schemas.rfq import RFQCreate, RFQUpdate, RFQResponse
+from backend.schemas.quotation import QuotationCreate, QuotationUpdate, QuotationResponse
+from backend.schemas.comparison import (
     CriterionType,
     ComparisonBadge,
     CriteriaWeights,
@@ -21,6 +21,21 @@ from schemas.comparison import (
     BenchmarkSummary,
     CriterionBenchmark,
     FXConversionAudit,
+)
+from backend.schemas.ahp_agent import (
+    AHPEvaluationRequest,
+    AHPScoreBreakdown,
+    AHPSupplierRankItem,
+    AHPRationaleSummary,
+    AHPAgentDecisionResponse,
+)
+from backend.schemas.risk_schemas import (
+    NewsArticle,
+    NewsSentimentResult,
+    HistoricalRiskRecord,
+    RiskVectorSearchResult,
+    SupplierRiskReport,
+    RiskEvaluationRequest,
 )
 
 __all__ = [
@@ -44,5 +59,15 @@ __all__ = [
     "BenchmarkSummary",
     "CriterionBenchmark",
     "FXConversionAudit",
+    "AHPEvaluationRequest",
+    "AHPScoreBreakdown",
+    "AHPSupplierRankItem",
+    "AHPRationaleSummary",
+    "AHPAgentDecisionResponse",
+    "NewsArticle",
+    "NewsSentimentResult",
+    "HistoricalRiskRecord",
+    "RiskVectorSearchResult",
+    "SupplierRiskReport",
+    "RiskEvaluationRequest",
 ]
-

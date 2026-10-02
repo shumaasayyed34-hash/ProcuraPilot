@@ -13,18 +13,34 @@ import math
 from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 
-from schemas.comparison import (
-    BenchmarkSummary,
-    ComparisonBadge,
-    ComparisonEngineResponse,
-    CriteriaWeights,
-    CriterionBenchmark,
-    CriterionDetail,
-    CriterionType,
-    FXConversionAudit,
-    SupplierComparisonItem,
-    SupplierQuoteInput,
-)
+try:
+    from schemas.comparison import (
+        BenchmarkSummary,
+        ComparisonBadge,
+        ComparisonEngineResponse,
+        CriteriaWeights,
+        CriterionBenchmark,
+        CriterionDetail,
+        CriterionType,
+        FXConversionAudit,
+        SupplierComparisonItem,
+        SupplierQuoteInput,
+    )
+except ImportError:
+    from backend.schemas.comparison import (
+        BenchmarkSummary,
+        ComparisonBadge,
+        ComparisonEngineResponse,
+        CriteriaWeights,
+        CriterionBenchmark,
+        CriterionDetail,
+        CriterionType,
+        FXConversionAudit,
+        SupplierComparisonItem,
+        SupplierQuoteInput,
+    )
+
+
 
 
 class FXRateService:
@@ -408,8 +424,9 @@ class SupplierComparisonEngine:
                 payment_terms=q.payment_terms,
                 supplier_rating=q.supplier_rating,
                 composite_score=composite,
-                rank=0,  # Assigned in next ranking step
+                rank=1,  # Initial default rank before sorting
                 badges=badges,
+
                 criteria_scores=crit_breakdown,
             )
             supplier_items.append(comp_item)

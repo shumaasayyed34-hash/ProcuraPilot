@@ -6,7 +6,7 @@ Provides endpoints for cross-agent context retrieval, session state, and inter-a
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional
-from backend.services.shared_memory.memory_service import AgentSharedMemoryService
+from services.shared_memory.memory_service import AgentSharedMemoryService
 
 router = APIRouter(prefix="/memory", tags=["Agent Shared Memory"])
 

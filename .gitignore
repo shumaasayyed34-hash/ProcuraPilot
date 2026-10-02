@@ -6,11 +6,17 @@ backend/.env
 __pycache__/
 *.pyc
 *.pyo
+*.log
 .pytest_cache/
 
 # Virtual environment
 venv/
 env/
+backend/.venv/
+
+# Storage & indices
+backend/uploads/
+backend/vector_indices/
 
 # Next.js
 .next/
