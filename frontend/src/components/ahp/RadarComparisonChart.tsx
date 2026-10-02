@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   ResponsiveContainer,
   RadarChart,
@@ -18,8 +18,14 @@ interface RadarComparisonChartProps {
 }
 
 export function RadarComparisonChart({ rankings }: RadarComparisonChartProps) {
-  // Take top 3 suppliers for clear legibility
-  const topSuppliers = rankings.slice(0, 3);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Take top 3 suppliers for clear legibility safely
+  const topSuppliers = (rankings || []).slice(0, 3);
 
   // Criteria categories for the radar axes
   const categories = [
@@ -36,21 +42,31 @@ export function RadarComparisonChart({ rankings }: RadarComparisonChartProps) {
     { stroke: "#F59E0B", fill: "#F59E0B", name: "Rank #3" },
   ];
 
-  // Reformat for Recharts Radar
+  // Reformat for Recharts Radar safely
   const radarData = categories.map((cat) => {
     const entry: Record<string, any> = {
       subject: cat.label,
       fullMark: 100,
     };
 
-    topSuppliers.forEach((sup, idx) => {
-      const normalizedScore =
-        (sup.normalized_scores as any)[cat.key] || 0;
-      entry[sup.supplier_name] = Math.round(normalizedScore * 100);
+    topSuppliers.forEach((sup) => {
+      const name = sup?.supplier_name || "Supplier";
+      const normalizedScore = (sup?.normalized_scores as any)?.[cat.key] ?? 0;
+      entry[name] = Math.round(normalizedScore * 100);
     });
 
     return entry;
   });
+
+  if (!mounted) {
+    return (
+      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between h-96 animate-pulse">
+        <div className="h-6 bg-slate-100 rounded w-1/3 mb-2" />
+        <div className="h-4 bg-slate-50 rounded w-1/2 mb-6" />
+        <div className="flex-1 bg-slate-50 rounded" />
+      </div>
+    );
+  }
 
   const CustomRadarTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {

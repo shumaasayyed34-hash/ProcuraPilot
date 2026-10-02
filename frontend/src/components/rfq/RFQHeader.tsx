@@ -25,6 +25,7 @@ interface RFQHeaderProps {
   onRerunValidation: () => void;
   onCompareClick: () => void;
   isValidating?: boolean;
+  isComparing?: boolean;
   selectedQuotesCount: number;
 }
 
@@ -34,6 +35,7 @@ export function RFQHeader({
   onRerunValidation,
   onCompareClick,
   isValidating = false,
+  isComparing = false,
   selectedQuotesCount,
 }: RFQHeaderProps) {
   const getStatusBadge = (status: RFQStatus) => {
@@ -133,13 +135,22 @@ export function RFQHeader({
             <span>Upload Quotation</span>
           </button>
 
-          {/* Compare Selected Suppliers Button */}
+          {/* Compare Selected Suppliers Button with Loading State */}
           <button
             onClick={onCompareClick}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all shadow-xs"
+            disabled={isComparing || isValidating}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all shadow-xs disabled:opacity-60"
           >
-            <GitCompare className="w-3.5 h-3.5 text-blue-600" />
-            <span>Compare Suppliers ({selectedQuotesCount})</span>
+            {isComparing ? (
+              <RefreshCw className="w-3.5 h-3.5 text-blue-600 animate-spin" />
+            ) : (
+              <GitCompare className="w-3.5 h-3.5 text-blue-600" />
+            )}
+            <span>
+              {isComparing
+                ? "Loading Comparison..."
+                : `Compare Suppliers (${selectedQuotesCount})`}
+            </span>
           </button>
 
           {/* AHP Scoring Engine Button */}
@@ -153,31 +164,31 @@ export function RFQHeader({
         </div>
       </div>
 
-      {/* Metadata Metrics Row */}
+      {/* Metadata Metrics Row with Safe Fallbacks */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-slate-100">
         <div className="space-y-0.5">
           <span className="text-[11px] font-medium text-slate-500">Allocated Budget</span>
           <p className="text-sm font-bold text-slate-900 font-mono">
-            ₹{rfq.budget.toLocaleString("en-IN")}
+            ₹{(rfq.budget ?? 0).toLocaleString("en-IN")}
           </p>
         </div>
         <div className="space-y-0.5">
           <span className="text-[11px] font-medium text-slate-500">Target Delivery Date</span>
           <p className="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            <span>{rfq.target_delivery_date}</span>
+            <span>{rfq.target_delivery_date || "Scheduled 2025"}</span>
           </p>
         </div>
         <div className="space-y-0.5">
           <span className="text-[11px] font-medium text-slate-500">Procurement Officer</span>
           <p className="text-sm font-semibold text-slate-800">
-            {rfq.buyer_name}
+            {rfq.buyer_name || "Procurement Officer"}
           </p>
         </div>
         <div className="space-y-0.5">
           <span className="text-[11px] font-medium text-slate-500">Quotation Submissions</span>
           <p className="text-sm font-bold text-blue-700">
-            {rfq.quotations_count} Bids Received
+            {rfq.quotations_count ?? selectedQuotesCount} Bids Received
           </p>
         </div>
       </div>

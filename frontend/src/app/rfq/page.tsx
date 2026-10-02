@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { AppLayout } from "@/components/layout/AppLayout";
 import {
@@ -18,14 +18,23 @@ import {
   FileCheck2,
   Layers,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { RFQItem, RFQStatus } from "@/lib/comparison-types";
 import { comparisonApi } from "@/lib/comparison-api";
 
-export default function RFQDirectoryPage() {
+function RFQDirectoryContent() {
+  const searchParams = useSearchParams();
   const [rfqs, setRfqs] = useState<RFQItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(searchParams?.get("search") || "");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  useEffect(() => {
+    const q = searchParams?.get("search");
+    if (q !== null && q !== undefined) {
+      setSearchQuery(q);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     async function loadData() {
@@ -40,10 +49,11 @@ export default function RFQDirectoryPage() {
   }, []);
 
   const filteredRfqs = rfqs.filter((rfq) => {
+    const q = searchQuery.toLowerCase();
     const matchesSearch =
-      rfq.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rfq.rfq_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rfq.category.toLowerCase().includes(searchQuery.toLowerCase());
+      (rfq.title || "").toLowerCase().includes(q) ||
+      (rfq.rfq_number || "").toLowerCase().includes(q) ||
+      (rfq.category || "").toLowerCase().includes(q);
     const matchesStatus = statusFilter === "all" || rfq.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -289,5 +299,21 @@ export default function RFQDirectoryPage() {
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+export default function RFQDirectoryPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppLayout>
+          <div className="max-w-7xl mx-auto space-y-6">
+            <div className="h-44 bg-white rounded-xl border border-slate-200 animate-pulse p-6" />
+          </div>
+        </AppLayout>
+      }
+    >
+      <RFQDirectoryContent />
+    </Suspense>
   );
 }

@@ -63,13 +63,13 @@ function AHPResultsContent() {
 
   // Filtered rankings based on search and threshold
   const filteredRankings = useMemo(() => {
-    if (!evaluation) return [];
+    if (!evaluation || !evaluation.rankings) return [];
     return evaluation.rankings.filter((sup) => {
       const matchesSearch =
-        sup.supplier_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        sup.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        sup.quote_number.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesScore = sup.ahp_score >= minScoreFilter;
+        (sup.supplier_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (sup.country || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (sup.quote_number || "").toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesScore = (sup.ahp_score ?? 0) >= minScoreFilter;
       return matchesSearch && matchesScore;
     });
   }, [evaluation, searchTerm, minScoreFilter]);

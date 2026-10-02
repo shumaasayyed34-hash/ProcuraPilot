@@ -45,6 +45,9 @@ export default function SupplierComparisonDetailPage() {
       }
     }
     loadComparison();
+    if (typeof window !== "undefined" && rfqId) {
+      localStorage.setItem("procurapilot_active_rfq_id", String(rfqId));
+    }
   }, [rfqId, weights]);
 
   const handleUpdateWeights = async (newWeights: CriteriaWeights) => {

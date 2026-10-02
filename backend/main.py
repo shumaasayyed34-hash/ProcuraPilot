@@ -17,6 +17,7 @@ from routers import risk as risk_router
 from routers import risk_agent as risk_agent_router
 from routers import market as market_router
 from routers import recommendation as recommendation_router
+from routers import search as search_router
 
 load_dotenv()
 
@@ -53,6 +54,7 @@ app.include_router(risk_router.router, prefix="/api/v1")
 app.include_router(risk_agent_router.router, prefix="/api/v1")
 app.include_router(market_router.router, prefix="/api/v1")
 app.include_router(recommendation_router.router, prefix="/api/v1")
+app.include_router(search_router.router, prefix="/api/v1")
 
 
 @app.get("/")
