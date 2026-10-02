@@ -29,6 +29,14 @@ from backend.schemas.ahp_agent import (
     AHPRationaleSummary,
     AHPAgentDecisionResponse,
 )
+from backend.schemas.risk_schemas import (
+    NewsArticle,
+    NewsSentimentResult,
+    HistoricalRiskRecord,
+    RiskVectorSearchResult,
+    SupplierRiskReport,
+    RiskEvaluationRequest,
+)
 
 __all__ = [
     "ProcurementDocumentExtract",
@@ -56,4 +64,10 @@ __all__ = [
     "AHPSupplierRankItem",
     "AHPRationaleSummary",
     "AHPAgentDecisionResponse",
+    "NewsArticle",
+    "NewsSentimentResult",
+    "HistoricalRiskRecord",
+    "RiskVectorSearchResult",
+    "SupplierRiskReport",
+    "RiskEvaluationRequest",
 ]

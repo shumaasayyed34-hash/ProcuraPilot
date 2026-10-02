@@ -298,3 +298,86 @@ class AgentSharedMemoryService:
 
         return None
 
+    async def store_risk_report(
+        self,
+        supplier_id: str,
+        report_data: Dict[str, Any],
+        ttl_seconds: Optional[int] = 86400 * 7,
+    ) -> bool:
+        """
+        Task I4.4: Persist risk report, aggregated scores, news summaries, and risk narratives into Agent Shared Memory.
+        Storage key: agent_memory:risk:{supplier_id}
+        """
+        risk_key = f"agent_memory:risk:{supplier_id}"
+
+        # 1. Store via standard session context
+        await self.set_context(
+            session_id=supplier_id,
+            key=risk_key,
+            value=report_data,
+            agent_id="RiskAnalysisAgent_I4.1",
+            ttl_seconds=ttl_seconds,
+        )
+
+        # 2. Directly cache under risk_key in Redis if active
+        if self.redis_client:
+            try:
+                import json
+                import inspect
+                res = self.redis_client.set(risk_key, json.dumps(report_data), ex=ttl_seconds)
+                if inspect.isawaitable(res):
+                    await res
+            except Exception as e:
+                logger.warning(f"Redis store_risk_report error for {risk_key}: {e}")
+
+        # 3. Always cache in memory
+        if supplier_id not in _IN_MEMORY_SESSIONS:
+            _IN_MEMORY_SESSIONS[supplier_id] = {}
+        _IN_MEMORY_SESSIONS[supplier_id][risk_key] = {
+            "value": report_data,
+            "updated_by": "RiskAnalysisAgent_I4.1",
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+
+        _IN_MEMORY_SESSIONS[risk_key] = {
+            "report": {
+                "value": report_data,
+                "updated_by": "RiskAnalysisAgent_I4.1",
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }
+        }
+        return True
+
+    async def get_risk_context(self, supplier_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Task I4.4: Fast retrieval of stored risk analysis results and context by supplier_id.
+        """
+        risk_key = f"agent_memory:risk:{supplier_id}"
+
+        # 1. Try Redis first
+        if self.redis_client:
+            try:
+                import json
+                import inspect
+                res = self.redis_client.get(risk_key)
+                if inspect.isawaitable(res):
+                    raw_data = await res
+                else:
+                    raw_data = res
+                if raw_data:
+                    return json.loads(raw_data)
+            except Exception as e:
+                logger.warning(f"Redis get_risk_context error for {risk_key}: {e}")
+
+        # 2. Try session context
+        data = await self.get_context(session_id=supplier_id, key=risk_key)
+        if data is not None:
+            return data
+
+        # 3. Try direct key lookup in memory
+        if risk_key in _IN_MEMORY_SESSIONS:
+            item = _IN_MEMORY_SESSIONS[risk_key].get("report")
+            if item and "value" in item:
+                return item["value"]
+
+        return None
